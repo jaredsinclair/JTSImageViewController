@@ -36,6 +36,7 @@
 @property (assign, nonatomic) BOOL presentingViewControllerPresentedFromItsUnsupportedOrientation;
 @property (assign, nonatomic) BOOL scrollViewIsAnimatingAZoom;
 @property (assign, nonatomic) BOOL imageIsBeingReadFromDisk;
+@property (assign, nonatomic) BOOL isManuallyResizingTheScrollViewFrame;
 
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnail;
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
@@ -187,100 +188,25 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    [self.view setBackgroundColor:[UIColor blackColor]];
-    [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
-    
-    self.blackBackdrop = [[UIView alloc] initWithFrame:CGRectInset(self.view.bounds, -512, -512)];
-    [self.blackBackdrop setBackgroundColor:[UIColor blackColor]];
-    [self.blackBackdrop setAlpha:0];
-    [self.view addSubview:self.blackBackdrop];
-    
-    
     if (self.mode == JTSImageViewControllerMode_Image) {
-        
-        self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-        self.scrollView.delegate = self;
-        self.scrollView.zoomScale = 1.0f;
-        self.scrollView.maximumZoomScale = 8.0f;
-        self.scrollView.scrollEnabled = NO;
-        self.scrollView.isAccessibilityElement = YES;
-        self.scrollView.accessibilityLabel = NSLocalizedStringFromTable(@"Full Screen Image View", @"JTSead", nil);
-        self.scrollView.accessibilityHint = NSLocalizedStringFromTable(@"Double tap to dismiss this screen. Double tap and hold for more options. Triple tap the image to zoom in and out.", @"JTSead", nil);
-        [self.view addSubview:self.scrollView];
-        
-        self.imageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
-        self.imageView.contentMode = UIViewContentModeScaleAspectFit;
-        self.imageView.accessibilityLabel = NSLocalizedStringFromTable(@"Image", @"JTSead", nil);
-        self.imageView.isAccessibilityElement = NO;
-        self.imageView.userInteractionEnabled = YES;
-        [self.scrollView addSubview:self.imageView];
-        
-        [self setupImageModeGestureRecognizers];
-        
-        self.progressContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 128.0f, 128.0f)];
-        [self.view addSubview:self.progressContainer];
-        self.progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
-        self.progressView.progress = 0;
-        self.progressView.tintColor = [UIColor whiteColor];
-        self.progressView.trackTintColor = [UIColor darkGrayColor];
-        CGRect progressFrame = self.progressView.frame;
-        progressFrame.size.width = 128.0f;
-        self.progressView.frame = progressFrame;
-        self.progressView.center = CGPointMake(64.0f, 64.0f);
-        self.progressView.alpha = 0;
-        [self.progressContainer addSubview:self.progressView];
-        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        self.spinner.center = CGPointMake(64.0f, 64.0f);
-        [self.spinner startAnimating];
-        [self.progressContainer addSubview:self.spinner];
-        [self.progressContainer setAlpha:0];
-        
-        self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.scrollView];
-        
+        [self _viewDidLoadForImageMode];
     }
     else if (self.mode == JTSImageViewControllerMode_AltText) {
-        
-        self.textView = [[UITextView alloc] initWithFrame:CGRectInset(self.view.bounds, 14.0f, 0)];
-        self.textView.delegate = self;
-        self.textView.textColor = [UIColor whiteColor];
-        self.textView.backgroundColor = [UIColor clearColor];
-        
-        UIFont *font = nil;
-        if ([self.optionsDelegate respondsToSelector:@selector(fontForAltTextInImageViewer:)]) {
-            font = [self.optionsDelegate fontForAltTextInImageViewer:self];
-        }
-        if (font == nil) {
-            font = [UIFont systemFontOfSize:21];
-        }
-        self.textView.font = font;
-        
-        self.textView.text = self.imageInfo.displayableTitleAltTextSummary;
-        
-        UIColor *tintColor = nil;
-        if ([self.optionsDelegate respondsToSelector:@selector(accentColorForAltTextInImageViewer:)]) {
-            tintColor = [self.optionsDelegate accentColorForAltTextInImageViewer:self];
-        }
-        if (tintColor != nil) {
-            self.textView.tintColor = tintColor;
-        }
-        
-        self.textView.textAlignment = NSTextAlignmentCenter;
-        self.textView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        self.textView.editable = NO;
-        self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
-        [self.view addSubview:self.textView];
-        
-        [self setupTextViewTapGestureRecognizer];
-    }
-    
-    if (self.image) {
-        [self updateInterfaceWithImage:self.image];
+        [self _viewDidLoadForAltTextMode];
     }
 }
 
 - (void)viewDidLayoutSubviews {
     [self updateLayoutsForCurrentOrientation];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if (self.lastUsedOrientation != self.interfaceOrientation) {
+        [self setLastUsedOrientation:self.interfaceOrientation];
+        [self setRotationTransformIsDirty:YES];
+        [self updateLayoutsForCurrentOrientation];
+    }
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -296,6 +222,105 @@
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, duration * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [weakSelf setIsRotating:NO];
     });
+}
+
+#pragma mark - Setup
+
+- (void)_viewDidLoadForImageMode {
+    
+    [self.view setBackgroundColor:[UIColor blackColor]];
+    [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
+    
+    self.blackBackdrop = [[UIView alloc] initWithFrame:CGRectInset(self.view.bounds, -512, -512)];
+    [self.blackBackdrop setBackgroundColor:[UIColor blackColor]];
+    [self.blackBackdrop setAlpha:0];
+    [self.view addSubview:self.blackBackdrop];
+    
+    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    self.scrollView.delegate = self;
+    self.scrollView.zoomScale = 1.0f;
+    self.scrollView.maximumZoomScale = 8.0f;
+    self.scrollView.scrollEnabled = NO;
+    self.scrollView.isAccessibilityElement = YES;
+    self.scrollView.accessibilityLabel = NSLocalizedStringFromTable(@"Full Screen Image View", @"JTSead", nil);
+    self.scrollView.accessibilityHint = NSLocalizedStringFromTable(@"Double tap to dismiss this screen. Double tap and hold for more options. Triple tap the image to zoom in and out.", @"JTSead", nil);
+    [self.view addSubview:self.scrollView];
+    
+    self.imageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
+    self.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.imageView.accessibilityLabel = NSLocalizedStringFromTable(@"Image", @"JTSead", nil);
+    self.imageView.isAccessibilityElement = NO;
+    self.imageView.userInteractionEnabled = YES;
+    [self.scrollView addSubview:self.imageView];
+    
+    [self setupImageModeGestureRecognizers];
+    
+    self.progressContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 128.0f, 128.0f)];
+    [self.view addSubview:self.progressContainer];
+    self.progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
+    self.progressView.progress = 0;
+    self.progressView.tintColor = [UIColor whiteColor];
+    self.progressView.trackTintColor = [UIColor darkGrayColor];
+    CGRect progressFrame = self.progressView.frame;
+    progressFrame.size.width = 128.0f;
+    self.progressView.frame = progressFrame;
+    self.progressView.center = CGPointMake(64.0f, 64.0f);
+    self.progressView.alpha = 0;
+    [self.progressContainer addSubview:self.progressView];
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    self.spinner.center = CGPointMake(64.0f, 64.0f);
+    [self.spinner startAnimating];
+    [self.progressContainer addSubview:self.spinner];
+    [self.progressContainer setAlpha:0];
+    
+    self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.scrollView];
+    
+    if (self.image) {
+        [self updateInterfaceWithImage:self.image];
+    }
+}
+
+- (void)_viewDidLoadForAltTextMode {
+    
+    [self.view setBackgroundColor:[UIColor blackColor]];
+    [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
+    
+    self.blackBackdrop = [[UIView alloc] initWithFrame:CGRectInset(self.view.bounds, -512, -512)];
+    [self.blackBackdrop setBackgroundColor:[UIColor blackColor]];
+    [self.blackBackdrop setAlpha:0];
+    [self.view addSubview:self.blackBackdrop];
+    
+    self.textView = [[UITextView alloc] initWithFrame:CGRectInset(self.view.bounds, 14.0f, 0)];
+    self.textView.delegate = self;
+    self.textView.textColor = [UIColor whiteColor];
+    self.textView.backgroundColor = [UIColor clearColor];
+    
+    UIFont *font = nil;
+    if ([self.optionsDelegate respondsToSelector:@selector(fontForAltTextInImageViewer:)]) {
+        font = [self.optionsDelegate fontForAltTextInImageViewer:self];
+    }
+    if (font == nil) {
+        font = [UIFont systemFontOfSize:21];
+    }
+    self.textView.font = font;
+    
+    self.textView.text = self.imageInfo.displayableTitleAltTextSummary;
+    
+    UIColor *tintColor = nil;
+    if ([self.optionsDelegate respondsToSelector:@selector(accentColorForAltTextInImageViewer:)]) {
+        tintColor = [self.optionsDelegate accentColorForAltTextInImageViewer:self];
+    }
+    if (tintColor != nil) {
+        self.textView.tintColor = tintColor;
+    }
+    
+    self.textView.textAlignment = NSTextAlignmentCenter;
+    self.textView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    self.textView.editable = NO;
+    self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    [self.view addSubview:self.textView];
+    
+    [self setupTextViewTapGestureRecognizer];
 }
 
 #pragma mark - Presentation
@@ -748,6 +773,11 @@
 
 - (void)updateScrollViewAndImageViewForCurrentMetrics {
     if (self.isDismissing == NO) {
+        if (self.isAnimatingAPresentationOrDismissal == NO) {
+            [self setIsManuallyResizingTheScrollViewFrame:YES];
+            self.scrollView.frame = self.view.bounds;
+            [self setIsManuallyResizingTheScrollViewFrame:NO];
+        }
         if (self.image) {
             self.imageView.frame = [self resizedFrameForAutorotatingImageView:self.image.size];
         } else {
@@ -854,7 +884,7 @@
         self.scrollView.scrollEnabled = YES;
     }
     
-    if (self.isAnimatingAPresentationOrDismissal == NO) {
+    if (self.isAnimatingAPresentationOrDismissal == NO && self.isManuallyResizingTheScrollViewFrame == NO) {
         CGFloat targetAlpha = (scrollView.zoomScale > 1) ? 1.0f : BLACK_BACKDROP_ALPHA_NORMAL;
         [UIView animateWithDuration:0.35 delay:0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState animations:^{
             [self.blackBackdrop setAlpha:targetAlpha];
@@ -1110,19 +1140,11 @@
     else if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerShouldTemporarilyIgnoreTouches:)]) {
         shouldReceiveTouch = ![self.interactionsDelegate imageViewerShouldTemporarilyIgnoreTouches:self];
     }
-#warning MOVE CHECK FOR OPTIONS VIEW CONTROLLER TO SHOULD RECEIVE TOUCH
-//    return (self.optionsViewController == nil);
     return shouldReceiveTouch;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return (gestureRecognizer == self.singleTapperText);
-}
-
-#pragma mark - Long Presses
-
-- (void)userDidLongPress {
-    // no-op, subclasses may respond
 }
 
 #pragma mark - Progress Bar
