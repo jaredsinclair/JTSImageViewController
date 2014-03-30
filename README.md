@@ -16,7 +16,7 @@ Usage is pretty simple, though there are some cool options and delegate methods 
     
     // Create image info
     JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
-    imageInfo.image = [self.bigImageButton backgroundImageForState:UIControlStateNormal];
+    imageInfo.image = YOUR_SOURCE_IMAGE;
     imageInfo.referenceRect = self.bigImageButton.frame;
     imageInfo.referenceView = self.bigImageButton.superview;
     
