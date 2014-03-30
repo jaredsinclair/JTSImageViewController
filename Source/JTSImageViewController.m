@@ -607,10 +607,11 @@
     __weak JTSImageViewController *weakSelf = self;
     
     // Have to dispatch after or else the image view changes above won't be
-    // committed prior to the animations below. A simple dispatch_async(dispatch_get_main_queue()
-    // wouldn't work under certain scrolling conditions, so it has to be an ugly time-based
-    // delay. 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.06 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    // committed prior to the animations below. A single dispatch_async(dispatch_get_main_queue()
+    // wouldn't work under certain scrolling conditions, so it has to be an ugly
+    // two runloops ahead.
+    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         
         CGFloat duration = DEFAULT_TRANSITION_DURATION;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
@@ -658,6 +659,7 @@
                 [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
             }];
         }];
+    });
     });
 }
 
