@@ -999,10 +999,6 @@
     return self.imageView;
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    
-}
-
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     
     if (self.imageIsFlickingAwayForDismissal) {
