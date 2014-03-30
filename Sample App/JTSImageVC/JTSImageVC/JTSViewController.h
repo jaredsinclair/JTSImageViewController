@@ -10,4 +10,6 @@
 
 @interface JTSViewController : UIViewController
 
+@property (weak, nonatomic) IBOutlet UIButton *bigImageButton;
+
 @end

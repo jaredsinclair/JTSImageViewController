@@ -62,7 +62,7 @@ typedef NS_ENUM(NSInteger, JTSImageViewControllerBackgroundStyle) {
 
 @protocol JTSImageViewControllerDismissalDelegate <NSObject>
 
-- (void)imageViewerDidCancel:(JTSImageViewController *)imageViewer;
+- (void)imageViewerDidDismiss:(JTSImageViewController *)imageViewer;
 
 @end
 

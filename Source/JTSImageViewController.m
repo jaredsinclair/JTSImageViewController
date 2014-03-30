@@ -77,6 +77,8 @@
 #define DOUBLE_TAP_TARGET_ZOOM 3.0f
 #define TRANSITION_THUMBNAIL_MAX_ZOOM 1.25f
 #define BLACK_BACKDROP_ALPHA_NORMAL 0.8f
+#define USE_DEBUG_SLOW_ANIMATIONS 0
+#define DEFAULT_TRANSITION_DURATION 0.28f
 
 @implementation JTSImageViewController
 
@@ -88,27 +90,13 @@
     
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
-        
         _imageInfo = imageInfo;
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundStyle = backgroundStyle;
-        
         if (_mode == JTSImageViewControllerMode_Image) {
-            _imageIsBeingReadFromDisk = [imageInfo.imageURL hasPrefix:@"file://"];
-            __weak JTSImageViewController *weakSelf = self;
-            _imageDownloadDataTask = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
-#warning Handle a nil image.
-                if ([weakSelf isViewLoaded]) {
-                    [weakSelf updateInterfaceWithImage:image];
-                } else {
-                    [weakSelf setImage:image];
-                }
-                [weakSelf cancelProgressTimer];
-            }];
-            [self startProgressTimer];
+            [self setupImageAndDownloadIfNecessary:imageInfo];
         }
-        
     }
     return self;
 }
@@ -226,6 +214,31 @@
 }
 
 #pragma mark - Setup
+
+- (void)setupImageAndDownloadIfNecessary:(JTSImageInfo *)imageInfo {
+    if (imageInfo.image) {
+        [self setImage:imageInfo.image];
+    }
+    else {
+        BOOL fromDisk = [imageInfo.imageURL hasPrefix:@"file://"];
+        [self setImageIsBeingReadFromDisk:fromDisk];
+        
+        __weak JTSImageViewController *weakSelf = self;
+        NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
+#warning Handle a nil image.
+            if ([weakSelf isViewLoaded]) {
+                [weakSelf updateInterfaceWithImage:image];
+            } else {
+                [weakSelf setImage:image];
+            }
+            [weakSelf cancelProgressTimer];
+        }];
+        
+        [self setImageDownloadDataTask:task];
+        
+        [self startProgressTimer];
+    }
+}
 
 - (void)_viewDidLoadForImageMode {
     
@@ -374,38 +387,51 @@
             }];
         }
         
-        [UIView
-         animateWithDuration:0.28f
-         delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
-         animations:^{
-             
-             self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
-                                                                   CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
-             
-             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
-                 [self.blurredSnapshotView setAlpha:1];
-             }
-             
-             [self addMotionEffectsToSnapshotView];
-             [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
-             
-             if (mustRotateDuringTransition) {
-                 [self.scrollView setTransform:CGAffineTransformIdentity];
-             }
-             
-             [self.scrollView setFrame:self.view.bounds];
-             [self updateScrollViewAndImageViewForCurrentMetrics];
-             
-             if (self.image == nil) {
-                 [self.progressContainer setAlpha:1.0f];
-             }
-             
-         } completion:^(BOOL finished) {
-             [self setIsAnimatingAPresentationOrDismissal:NO];
-             [self.view setUserInteractionEnabled:YES];
-             [self setIsPresented:YES];
-         }];
+        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+            duration *= 4;
+        }
+        
+        __weak JTSImageViewController *weakSelf = self;
+        
+        // Have to dispatch to the next runloop,
+        // or else the image view changes above won't be
+        // committed prior to the animations below.
+        dispatch_async(dispatch_get_main_queue(), ^{
+        
+            [UIView
+             animateWithDuration:duration
+             delay:0
+             options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
+             animations:^{
+                 
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
+                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 
+                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                     [weakSelf.blurredSnapshotView setAlpha:1];
+                 }
+                 
+                 [weakSelf addMotionEffectsToSnapshotView];
+                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 
+                 if (mustRotateDuringTransition) {
+                     [weakSelf.scrollView setTransform:CGAffineTransformIdentity];
+                 }
+                 
+                 [weakSelf.scrollView setFrame:weakSelf.view.bounds];
+                 [weakSelf updateScrollViewAndImageViewForCurrentMetrics];
+                 
+                 if (weakSelf.image == nil) {
+                     [weakSelf.progressContainer setAlpha:1.0f];
+                 }
+                 
+             } completion:^(BOOL finished) {
+                 [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
+                 [weakSelf.view setUserInteractionEnabled:YES];
+                 [weakSelf setIsPresented:YES];
+             }];
+        });
     }];
 }
 
@@ -439,34 +465,47 @@
         [self updateScrollViewAndImageViewForCurrentMetrics];
         [self.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
         
-        [UIView
-         animateWithDuration:0.28f
-         delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
-         animations:^{
-             
-             self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
-                                                                   CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
-             
-             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
-                 [self.blurredSnapshotView setAlpha:1];
-             }
-             
-             [self addMotionEffectsToSnapshotView];
-             [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
-             
-             [self.scrollView setAlpha:1.0f];
-             [self.scrollView setTransform:CGAffineTransformIdentity];
-             
-             if (self.image == nil) {
-                 [self.progressContainer setAlpha:1.0f];
-             }
-             
-         } completion:^(BOOL finished) {
-             [self setIsAnimatingAPresentationOrDismissal:NO];
-             [self.view setUserInteractionEnabled:YES];
-             [self setIsPresented:YES];
-         }];
+        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+            duration *= 4;
+        }
+        
+        __weak JTSImageViewController *weakSelf = self;
+        
+        // Have to dispatch to the next runloop,
+        // or else the image view changes above won't be
+        // committed prior to the animations below.
+        dispatch_async(dispatch_get_main_queue(), ^{
+        
+            [UIView
+             animateWithDuration:duration
+             delay:0
+             options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
+             animations:^{
+                 
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
+                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 
+                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                     [weakSelf.blurredSnapshotView setAlpha:1];
+                 }
+                 
+                 [weakSelf addMotionEffectsToSnapshotView];
+                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 
+                 [weakSelf.scrollView setAlpha:1.0f];
+                 [weakSelf.scrollView setTransform:CGAffineTransformIdentity];
+                 
+                 if (weakSelf.image == nil) {
+                     [weakSelf.progressContainer setAlpha:1.0f];
+                 }
+                 
+             } completion:^(BOOL finished) {
+                 [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
+                 [weakSelf.view setUserInteractionEnabled:YES];
+                 [weakSelf setIsPresented:YES];
+             }];
+        });
     }];
 }
 
@@ -498,32 +537,45 @@
         [self.textView setAlpha:0];
         [self.textView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
         
-        [UIView
-         animateWithDuration:0.28f
-         delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
-         animations:^{
-             
-             self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
-                                                                   CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
-             
-             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
-                 [self.blurredSnapshotView setAlpha:1];
-             }
-             
-             [self addMotionEffectsToSnapshotView];
-             [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
-             
-             if (_mode == JTSImageViewControllerMode_AltText) {
-                 [self.textView setAlpha:1.0];
-                 [self.textView setTransform:CGAffineTransformIdentity];
-             }
-             
-         } completion:^(BOOL finished) {
-             [self setIsAnimatingAPresentationOrDismissal:NO];
-             [self.view setUserInteractionEnabled:YES];
-             [self setIsPresented:YES];
-         }];
+        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+            duration *= 4;
+        }
+        
+        __weak JTSImageViewController *weakSelf = self;
+        
+        // Have to dispatch to the next runloop,
+        // or else the image view changes above won't be
+        // committed prior to the animations below.
+        dispatch_async(dispatch_get_main_queue(), ^{
+        
+            [UIView
+             animateWithDuration:duration
+             delay:0
+             options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
+             animations:^{
+                 
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
+                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 
+                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                     [weakSelf.blurredSnapshotView setAlpha:1];
+                 }
+                 
+                 [weakSelf addMotionEffectsToSnapshotView];
+                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 
+                 if (_mode == JTSImageViewControllerMode_AltText) {
+                     [weakSelf.textView setAlpha:1.0];
+                     [weakSelf.textView setTransform:CGAffineTransformIdentity];
+                 }
+                 
+             } completion:^(BOOL finished) {
+                 [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
+                 [weakSelf.view setUserInteractionEnabled:YES];
+                 [weakSelf setIsPresented:YES];
+             }];
+        });
     }];
 }
 
@@ -557,7 +609,12 @@
     // committed prior to the animations below.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.032 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         
-        [UIView animateWithDuration:0.28f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+            duration *= 4;
+        }
+        
+        [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
             
             weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
             [weakSelf removeMotionEffectsFromSnapshotView];
@@ -594,7 +651,9 @@
                 }
             }
         } completion:^(BOOL finished) {
-            [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+            [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
+                [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
+            }];
         }];
     });
 }
@@ -607,7 +666,12 @@
     
     __weak JTSImageViewController *weakSelf = self;
     
-    [UIView animateWithDuration:0.28f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+        duration *= 4;
+    }
+    
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
@@ -616,7 +680,9 @@
         }
         [weakSelf.scrollView setAlpha:0];
     } completion:^(BOOL finished) {
-        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
+            [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
+        }];
     }];
 }
 
@@ -627,8 +693,13 @@
     [self setIsDismissing:YES];
     
     __weak JTSImageViewController *weakSelf = self;
+    
+    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+        duration *= 4;
+    }
 
-    [UIView animateWithDuration:0.28f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
@@ -638,7 +709,9 @@
         [weakSelf.scrollView setAlpha:0];
         [weakSelf.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
     } completion:^(BOOL finished) {
-        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
+            [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
+        }];
     }];
 }
 
@@ -649,8 +722,13 @@
     [self setIsDismissing:YES];
     
     __weak JTSImageViewController *weakSelf = self;
-        
-    [UIView animateWithDuration:0.28f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+    
+    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
+        duration *= 4;
+    }
+    
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
@@ -661,7 +739,9 @@
         CGFloat targetScale = TRANSITION_THUMBNAIL_MAX_ZOOM;
         [weakSelf.textView setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
     } completion:^(BOOL finished) {
-        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+        [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
+            [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
+        }];
     }];
 }
 
@@ -829,9 +909,9 @@
             [self setIsManuallyResizingTheScrollViewFrame:NO];
         }
         if (self.image) {
-            self.imageView.frame = [self resizedFrameForAutorotatingImageView:self.image.size];
+            [self.imageView setFrame:[self resizedFrameForAutorotatingImageView:self.image.size]];
         } else {
-            self.imageView.frame = [self resizedFrameForAutorotatingImageView:self.imageInfo.referenceRect.size];
+            [self.imageView setFrame:[self resizedFrameForAutorotatingImageView:self.imageInfo.referenceRect.size]];
         }
         self.scrollView.contentSize = self.imageView.frame.size;
         self.scrollView.contentInset = [self contentInsetForScrollView:self.scrollView.zoomScale];
@@ -960,7 +1040,7 @@
     
     CGPoint velocity = [scrollView.panGestureRecognizer velocityInView:scrollView.panGestureRecognizer.view];
     if (scrollView.zoomScale == 1 && (fabsf(velocity.x) > 1600 || fabsf(velocity.y) > 1600 ) ) {
-        [self.dismissalDelegate imageViewerDidCancel:self];
+        [self dismiss:YES];
     }
 }
 
@@ -1045,7 +1125,7 @@
     if (self.scrollViewIsAnimatingAZoom) {
         return;
     }
-    [self.dismissalDelegate imageViewerDidCancel:self];
+    [self dismiss:YES];
 }
 
 - (void)imageLongPressed:(UILongPressGestureRecognizer *)sender {
@@ -1097,7 +1177,7 @@
             if (self.isDraggingImage) {
                 [self dismissImageWithFlick:velocity];
             } else {
-                [self.dismissalDelegate imageViewerDidCancel:self];
+                [self dismiss:YES];
             }
         }
         else {
@@ -1154,7 +1234,7 @@
             [weakSelf.animator removeAllBehaviors];
             [weakSelf setAttachmentBehavior:nil];
             [weakSelf.imageView removeFromSuperview];
-            [weakSelf.dismissalDelegate imageViewerDidCancel:weakSelf];
+            [weakSelf dismiss:YES];
         }
     }];
     [self.animator removeBehavior:self.attachmentBehavior];
