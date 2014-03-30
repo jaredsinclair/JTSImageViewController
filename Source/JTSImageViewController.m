@@ -207,6 +207,7 @@
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     [self cancelCurrentImageDrag:NO];
     [self updateLayoutsForCurrentOrientation];
+    [self updateDimmingViewForCurrentZoomScale:NO];
     __weak JTSImageViewController *weakSelf = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, duration * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [weakSelf setIsRotating:NO];
@@ -607,7 +608,7 @@
     
     // Have to dispatch after or else the image view changes above won't be
     // committed prior to the animations below.
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.032 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         
         CGFloat duration = DEFAULT_TRANSITION_DURATION;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
@@ -1015,10 +1016,7 @@
     }
     
     if (self.isAnimatingAPresentationOrDismissal == NO && self.isManuallyResizingTheScrollViewFrame == NO) {
-        CGFloat targetAlpha = (scrollView.zoomScale > 1) ? 1.0f : BLACK_BACKDROP_ALPHA_NORMAL;
-        [UIView animateWithDuration:0.35 delay:0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState animations:^{
-            [self.blackBackdrop setAlpha:targetAlpha];
-        } completion:nil];
+        [self updateDimmingViewForCurrentZoomScale:YES];
     }
 }
 
@@ -1042,6 +1040,16 @@
     if (scrollView.zoomScale == 1 && (fabsf(velocity.x) > 1600 || fabsf(velocity.y) > 1600 ) ) {
         [self dismiss:YES];
     }
+}
+
+#pragma mark - Update Dimming View for Zoom Scale
+
+- (void)updateDimmingViewForCurrentZoomScale:(BOOL)animated {
+    CGFloat targetAlpha = (self.scrollView.zoomScale > 1) ? 1.0f : BLACK_BACKDROP_ALPHA_NORMAL;
+    CGFloat duration = (animated) ? 0.35 : 0;
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState animations:^{
+        [self.blackBackdrop setAlpha:targetAlpha];
+    } completion:nil];
 }
 
 #pragma mark - Gesture Recognition
