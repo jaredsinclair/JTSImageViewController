@@ -12,13 +12,13 @@
 
 @implementation JTSSimpleImageDownloader
 
-+ (NSURLSessionDataTask *)downloadImageForURL:(NSString *)imageURL canonicalURL:(NSString *)canonicalURL completion:(void (^)(UIImage *))completion {
++ (NSURLSessionDataTask *)downloadImageForURL:(NSURL *)imageURL canonicalURL:(NSURL *)canonicalURL completion:(void (^)(UIImage *))completion {
     
     NSURLSessionDataTask *dataTask = nil;
     
-    if (imageURL.length) {
+    if (imageURL.absoluteString.length) {
         
-        NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:imageURL]];
+        NSURLRequest *request = [NSURLRequest requestWithURL:imageURL];
         
         if (request == nil) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -54,11 +54,11 @@
     return dataTask;
 }
 
-+ (UIImage *)imageFromData:(NSData *)data forURL:(NSString *)imageURL canonicalURL:(NSString *)canonicalURL {
++ (UIImage *)imageFromData:(NSData *)data forURL:(NSURL *)imageURL canonicalURL:(NSURL *)canonicalURL {
     UIImage *image = nil;
     
     if (data) {
-        NSString *referenceURL = (canonicalURL.length) ? canonicalURL : imageURL;
+        NSString *referenceURL = (canonicalURL.absoluteString.length) ? canonicalURL.absoluteString : imageURL.absoluteString;
         if ([JTSAnimatedGIFUtility imageURLIsAGIF:referenceURL] == YES) {
             image = [JTSAnimatedGIFUtility animatedImageWithAnimatedGIFData:data];
         }
