@@ -11,8 +11,8 @@
 @interface JTSImageInfo : NSObject
 
 @property (strong, nonatomic) UIImage *image; // If nil, be sure to set either imageURL or canonicalImageURL.
-@property (copy, nonatomic) NSString *imageURL;
-@property (copy, nonatomic) NSString *canonicalImageURL; // since `imageURL` might be a filesystem URL from the local cache.
+@property (copy, nonatomic) NSURL *imageURL;
+@property (copy, nonatomic) NSURL *canonicalImageURL; // since `imageURL` might be a filesystem URL from the local cache.
 @property (copy, nonatomic) NSString *altText;
 @property (copy, nonatomic) NSString *title;
 @property (assign, nonatomic) CGRect referenceRect;

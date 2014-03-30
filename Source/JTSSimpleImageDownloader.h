@@ -10,8 +10,8 @@
 
 @interface JTSSimpleImageDownloader : NSObject
 
-+ (NSURLSessionDataTask *)downloadImageForURL:(NSString *)imageURL
-                                 canonicalURL:(NSString *)canonicalURL
++ (NSURLSessionDataTask *)downloadImageForURL:(NSURL *)imageURL
+                                 canonicalURL:(NSURL *)canonicalURL
                                    completion:(void(^)(UIImage *image))completion;
 
 @end

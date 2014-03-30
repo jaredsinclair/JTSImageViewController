@@ -221,7 +221,7 @@
         [self setImage:imageInfo.image];
     }
     else {
-        BOOL fromDisk = [imageInfo.imageURL hasPrefix:@"file://"];
+        BOOL fromDisk = [imageInfo.imageURL.absoluteString hasPrefix:@"file://"];
         [self setImageIsBeingReadFromDisk:fromDisk];
         
         __weak JTSImageViewController *weakSelf = self;
