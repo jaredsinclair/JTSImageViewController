@@ -7,6 +7,10 @@ An interactive iOS image viewer that does it all: double tap to zoom, flick to d
 
 JTSImageViewController is like a "light box" for iOS. It's similar to image viewers you may have seen in apps like Twitter, Tweetbot, and others. It presents an image in a full-screen interactive view. Users can pan and zoom, and use Tweetbot-style dynamic gestures to dismiss it with a fun flick.
 
+## Screenshot
+
+<img width="320" src="https://raw.githubusercontent.com/jaredsinclair/JTSImageViewController/master/jts-image-viewer-screenshot.png" />
+
 ## How Does it Work?
 
 Usage is pretty simple, though there are some cool options and delegate methods if you need them. Here's what your simplest implementation might look like:
