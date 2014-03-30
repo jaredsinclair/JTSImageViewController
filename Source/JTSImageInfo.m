@@ -46,13 +46,11 @@
     return [NSString stringWithFormat:@"\
             %@ %p \n\
             imageURL: %@ \n\
-            referenceRect: (%g, %g) (%g, %g) \n\
-            documentRect:  (%g, %g) (%g, %g) \n",
+            referenceRect: (%g, %g) (%g, %g)",
             
             NSStringFromClass(self.class), self,
             self.imageURL,
-            self.referenceRect.origin.x, self.referenceRect.origin.y, self.referenceRect.size.width, self.referenceRect.size.height,
-            self.documentRect.origin.x, self.documentRect.origin.y, self.documentRect.size.width, self.documentRect.size.height
+            self.referenceRect.origin.x, self.referenceRect.origin.y, self.referenceRect.size.width, self.referenceRect.size.height
             ];
 }
 
