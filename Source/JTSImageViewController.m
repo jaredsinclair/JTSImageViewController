@@ -51,6 +51,7 @@
 @property (strong, nonatomic) UIView *progressContainer;
 @property (strong, nonatomic) UIView *outerContainerForScrollView;
 @property (strong, nonatomic) UIView *snapshotView;
+@property (strong, nonatomic) UIView *blurredSnapshotView;
 @property (strong, nonatomic) UIView *blackBackdrop;
 @property (strong, nonatomic) UIImageView *imageView;
 @property (strong, nonatomic) UIScrollView *scrollView;
@@ -331,6 +332,13 @@
     [self.view setUserInteractionEnabled:NO];
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
+    
+    if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+        self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
+        [self.snapshotView addSubview:self.blurredSnapshotView];
+        [self.blurredSnapshotView setAlpha:0];
+    }
+    
     [self.view insertSubview:self.snapshotView atIndex:0];
     [self setStartingInterfaceOrientation:viewController.interfaceOrientation];
     [self setLastUsedOrientation:viewController.interfaceOrientation];
@@ -369,11 +377,16 @@
         [UIView
          animateWithDuration:0.28f
          delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState
+         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
          animations:^{
              
              self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
                                                                    CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+             
+             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                 [self.blurredSnapshotView setAlpha:1];
+             }
+             
              [self addMotionEffectsToSnapshotView];
              [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
              
@@ -402,6 +415,13 @@
     [self.view setUserInteractionEnabled:NO];
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
+    
+    if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+        self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
+        [self.snapshotView addSubview:self.blurredSnapshotView];
+        [self.blurredSnapshotView setAlpha:0];
+    }
+    
     [self.view insertSubview:self.snapshotView atIndex:0];
     [self setStartingInterfaceOrientation:viewController.interfaceOrientation];
     [self setLastUsedOrientation:viewController.interfaceOrientation];
@@ -422,11 +442,16 @@
         [UIView
          animateWithDuration:0.28f
          delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState
+         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
          animations:^{
              
              self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
                                                                    CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+             
+             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                 [self.blurredSnapshotView setAlpha:1];
+             }
+             
              [self addMotionEffectsToSnapshotView];
              [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
              
@@ -451,6 +476,13 @@
     [self.view setUserInteractionEnabled:NO];
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
+    
+    if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+        self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
+        [self.snapshotView addSubview:self.blurredSnapshotView];
+        [self.blurredSnapshotView setAlpha:0];
+    }
+    
     [self.view insertSubview:self.snapshotView atIndex:0];
     [self setStartingInterfaceOrientation:viewController.interfaceOrientation];
     [self setLastUsedOrientation:viewController.interfaceOrientation];
@@ -469,11 +501,16 @@
         [UIView
          animateWithDuration:0.28f
          delay:0
-         options:UIViewAnimationOptionBeginFromCurrentState
+         options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
          animations:^{
              
              self.snapshotView.transform = CGAffineTransformConcat(self.snapshotView.transform,
                                                                    CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+             
+             if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                 [self.blurredSnapshotView setAlpha:1];
+             }
+             
              [self addMotionEffectsToSnapshotView];
              [self.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
              
@@ -526,6 +563,10 @@
             [weakSelf removeMotionEffectsFromSnapshotView];
             [weakSelf.blackBackdrop setAlpha:0];
             
+            if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                [weakSelf.blurredSnapshotView setAlpha:0];
+            }
+            
             BOOL mustRotateDuringTransition = (weakSelf.interfaceOrientation != weakSelf.startingInterfaceOrientation);
             if (mustRotateDuringTransition) {
                 CGRect newEndingRect;
@@ -570,9 +611,10 @@
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
-        if (weakSelf.imageIsFlickingAwayForDismissal) {
-            [weakSelf.scrollView setAlpha:0];
+        if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+            [weakSelf.blurredSnapshotView setAlpha:0];
         }
+        [weakSelf.scrollView setAlpha:0];
     } completion:^(BOOL finished) {
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:nil];
     }];
@@ -590,6 +632,9 @@
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
+        if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+            [weakSelf.blurredSnapshotView setAlpha:0];
+        }
         [weakSelf.scrollView setAlpha:0];
         [weakSelf.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
     } completion:^(BOOL finished) {
@@ -610,6 +655,9 @@
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
         [weakSelf.textView setAlpha:0];
+        if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+            [weakSelf.blurredSnapshotView setAlpha:0];
+        }
         CGFloat targetScale = TRANSITION_THUMBNAIL_MAX_ZOOM;
         [weakSelf.textView setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
     } completion:^(BOOL finished) {
@@ -623,9 +671,8 @@
     
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
-    
     UIView *snapshot = [presentingViewController.view snapshotViewAfterScreenUpdates:YES];
-    
+    [snapshot setClipsToBounds:NO];
     return snapshot;
 }
 
@@ -634,18 +681,21 @@
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
     
-    UIGraphicsBeginImageContextWithOptions(presentingViewController.view.bounds.size, YES, 0);
-    
+    CGFloat outerBleed = 20.0f;
+    CGRect contextBounds = CGRectInset(presentingViewController.view.bounds, -outerBleed, -outerBleed);
+    UIGraphicsBeginImageContextWithOptions(contextBounds.size, YES, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextConcatCTM(context, CGAffineTransformMakeTranslation(outerBleed, outerBleed));
     [presentingViewController.view.layer renderInContext:context];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
     
     UIImage *blurredImage = [image JTS_applyBlurWithRadius:3.0f tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
-    
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:presentingViewController.view.bounds];
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:contextBounds];
     [imageView setImage:blurredImage];
+    [imageView setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
+    [imageView setBackgroundColor:[UIColor blackColor]];
     
     return imageView;
 }
