@@ -733,16 +733,25 @@
         duration *= 4;
     }
     
+    // Replace the text view with a snapshot of itself,
+    // to prevent the text from reflowing during the dismissal animation.
+    UIView *textViewSnapshot = [self.textView snapshotViewAfterScreenUpdates:YES];
+    [textViewSnapshot setFrame:self.textView.frame];
+    [self.textView.superview insertSubview:textViewSnapshot aboveSubview:self.textView];
+    [self.textView removeFromSuperview];
+    [self.textView setDelegate:nil];
+    [self setTextView:nil];
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         [weakSelf.blackBackdrop setAlpha:0];
-        [weakSelf.textView setAlpha:0];
+        [textViewSnapshot setAlpha:0];
         if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
             [weakSelf.blurredSnapshotView setAlpha:0];
         }
         CGFloat targetScale = TRANSITION_THUMBNAIL_MAX_ZOOM;
-        [weakSelf.textView setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
+        [textViewSnapshot setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
     } completion:^(BOOL finished) {
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
