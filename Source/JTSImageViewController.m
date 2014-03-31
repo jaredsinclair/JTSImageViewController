@@ -37,6 +37,7 @@
 @property (assign, nonatomic) BOOL scrollViewIsAnimatingAZoom;
 @property (assign, nonatomic) BOOL imageIsBeingReadFromDisk;
 @property (assign, nonatomic) BOOL isManuallyResizingTheScrollViewFrame;
+@property (assign, nonatomic) BOOL imageDownloadFailed;
 
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnail;
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
@@ -226,13 +227,21 @@
         
         __weak JTSImageViewController *weakSelf = self;
         NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
-#warning Handle a nil image.
-            if ([weakSelf isViewLoaded]) {
-                [weakSelf updateInterfaceWithImage:image];
-            } else {
-                [weakSelf setImage:image];
-            }
             [weakSelf cancelProgressTimer];
+            if (image) {
+                if ([weakSelf isViewLoaded]) {
+                    [weakSelf updateInterfaceWithImage:image];
+                } else {
+                    [weakSelf setImage:image];
+                }
+            } else {
+                [weakSelf setImageDownloadFailed:YES];
+                if (weakSelf.isPresented && weakSelf.isAnimatingAPresentationOrDismissal == NO) {
+                    [weakSelf dismiss:YES];
+                }
+                // If we're still presenting, at the end of presentation,
+                // we'll auto dismiss.
+            }
         }];
         
         [self setImageDownloadDataTask:task];
@@ -431,6 +440,9 @@
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
                  [weakSelf setIsPresented:YES];
+                 if (weakSelf.imageDownloadFailed) {
+                     [weakSelf dismiss:YES];
+                 }
              }];
         });
     }];
@@ -505,6 +517,9 @@
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
                  [weakSelf setIsPresented:YES];
+                 if (weakSelf.imageDownloadFailed) {
+                     [weakSelf dismiss:YES];
+                 }
              }];
         });
     }];
