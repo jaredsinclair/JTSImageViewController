@@ -178,9 +178,12 @@
 }
 
 - (BOOL)prefersStatusBarHidden {
-    BOOL prefers = (self.isPresented || self.isTransitioningFromInitialModalToInteractiveState);
-    NSLog(@"Pref: %i", prefers);
-    return prefers;
+    
+    if (self.isPresented || self.isTransitioningFromInitialModalToInteractiveState) {
+        return YES;
+    }
+    
+    return self.statusBarHiddenPriorToPresentation;
 }
 
 - (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
@@ -252,7 +255,7 @@
         NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
             [weakSelf cancelProgressTimer];
             if (image) {
-                if (weakSelf.isPresented && weakSelf.isAnimatingAPresentationOrDismissal == NO) {
+                if (weakSelf.isViewLoaded) {
                     [weakSelf updateInterfaceWithImage:image];
                 } else {
                     [weakSelf setImage:image];
