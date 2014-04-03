@@ -5,34 +5,34 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>7D3D0ACD-88C3-440C-8A3E-C6E51A9E5D30</string>
+	<string>FD06F5D6-1474-40F7-9B3B-56C58954E703</string>
 	<key>IDESourceControlProjectName</key>
 	<string>JTSImageVC</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>F1DDE1C1-7CB6-41BD-85F7-9AD005D28673</key>
-		<string>ssh://github.com/jaredsinclair/JTSImageViewController.git</string>
+		<key>6A26C3CC-9718-4052-8214-0FF1229029E4</key>
+		<string>ssh://github.com//jaredsinclair/JTSImageViewController</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Sample App/JTSImageVC/JTSImageVC.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>F1DDE1C1-7CB6-41BD-85F7-9AD005D28673</key>
+		<key>6A26C3CC-9718-4052-8214-0FF1229029E4</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>ssh://github.com/jaredsinclair/JTSImageViewController.git</string>
+	<string>ssh://github.com/Riposte/riposte-ios-client.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>110</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>F1DDE1C1-7CB6-41BD-85F7-9AD005D28673</string>
+	<string>6A26C3CC-9718-4052-8214-0FF1229029E4</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>F1DDE1C1-7CB6-41BD-85F7-9AD005D28673</string>
+			<string>6A26C3CC-9718-4052-8214-0FF1229029E4</string>
 			<key>IDESourceControlWCCName</key>
 			<string>JTSImageViewController</string>
 		</dict>

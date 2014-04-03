@@ -10,6 +10,7 @@
 
 #import "JTSSimpleImageDownloader.h"
 #import "UIImage+JTSImageEffects.h"
+#import "UIApplication+JTSImageViewController.h"
 
 @interface JTSImageViewController ()
 <
@@ -28,6 +29,8 @@
 
 @property (assign, nonatomic) BOOL isAnimatingAPresentationOrDismissal;
 @property (assign, nonatomic) BOOL isDismissing;
+@property (assign, nonatomic) BOOL isTransitioningFromInitialModalToInteractiveState;
+@property (assign, nonatomic) BOOL viewHasAppeared;
 @property (assign, nonatomic) BOOL isRotating;
 @property (assign, nonatomic) BOOL isPresented;
 @property (assign, nonatomic) BOOL rotationTransformIsDirty;
@@ -38,6 +41,7 @@
 @property (assign, nonatomic) BOOL imageIsBeingReadFromDisk;
 @property (assign, nonatomic) BOOL isManuallyResizingTheScrollViewFrame;
 @property (assign, nonatomic) BOOL imageDownloadFailed;
+@property (assign, nonatomic) BOOL statusBarHiddenPriorToPresentation;
 
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnail;
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
@@ -110,6 +114,8 @@
     
     [self setTransition:transition];
     
+    _statusBarHiddenPriorToPresentation = [UIApplication sharedApplication].statusBarHidden;
+    
     if (self.mode == JTSImageViewControllerMode_Image) {
         if (transition == JTSImageViewControllerTransition_FromOffscreen) {
             [self _showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
@@ -172,7 +178,13 @@
 }
 
 - (BOOL)prefersStatusBarHidden {
-    return YES;
+    BOOL prefers = (self.isPresented || self.isTransitioningFromInitialModalToInteractiveState);
+    NSLog(@"Pref: %i", prefers);
+    return prefers;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return UIStatusBarAnimationFade;
 }
 
 - (UIModalTransitionStyle)modalTransitionStyle {
@@ -202,6 +214,11 @@
     }
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self setViewHasAppeared:YES];
+}
+
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     [self setLastUsedOrientation:toInterfaceOrientation];
     [self setRotationTransformIsDirty:YES];
@@ -225,6 +242,9 @@
         [self setImage:imageInfo.image];
     }
     else {
+        
+        [self setImage:imageInfo.placeholderImage];
+        
         BOOL fromDisk = [imageInfo.imageURL.absoluteString hasPrefix:@"file://"];
         [self setImageIsBeingReadFromDisk:fromDisk];
         
@@ -232,12 +252,12 @@
         NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
             [weakSelf cancelProgressTimer];
             if (image) {
-                if ([weakSelf isViewLoaded]) {
+                if (weakSelf.isPresented && weakSelf.isAnimatingAPresentationOrDismissal == NO) {
                     [weakSelf updateInterfaceWithImage:image];
                 } else {
                     [weakSelf setImage:image];
                 }
-            } else {
+            } else if (weakSelf.image == nil) {
                 [weakSelf setImageDownloadFailed:YES];
                 if (weakSelf.isPresented && weakSelf.isAnimatingAPresentationOrDismissal == NO) {
                     [weakSelf dismiss:YES];
@@ -274,9 +294,15 @@
     [self.view addSubview:self.scrollView];
     
     self.imageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
-    self.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.imageView.contentMode = UIViewContentModeScaleAspectFill;
     self.imageView.isAccessibilityElement = NO;
-    [self.scrollView addSubview:self.imageView];
+    self.imageView.clipsToBounds = YES;
+    
+    // We'll add the image view to either the scroll view
+    // or the parent view, based on the transition style
+    // used in the "show" method.
+    // After that transition completes, the image view will be
+    // added to the scroll view.
     
     [self setupImageModeGestureRecognizers];
     
@@ -369,6 +395,10 @@
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
     self.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
+    // This will be moved into the scroll view after
+    // the transition finishes.
+    [self.view addSubview:self.imageView];
+    
     [viewController presentViewController:self animated:NO completion:^{
         
         if (self.interfaceOrientation != self.startingInterfaceOrientation) {
@@ -377,24 +407,24 @@
         
         CGRect referenceFrameInMyView = [self.view convertRect:referenceFrameInWindow fromView:nil];
         [self setStartingReferenceFrameForThumbnail:referenceFrameInMyView];
-        [self.scrollView setFrame:referenceFrameInMyView];
+        [self.imageView setFrame:referenceFrameInMyView];
         [self updateScrollViewAndImageViewForCurrentMetrics];
         
         BOOL mustRotateDuringTransition = (self.interfaceOrientation != self.startingInterfaceOrientation);
         if (mustRotateDuringTransition) {
             CGRect newStartingRect = [self.snapshotView convertRect:self.startingReferenceFrameForThumbnail toView:self.view];
-            [self.scrollView setFrame:newStartingRect];
+            [self.imageView setFrame:newStartingRect];
             [self updateScrollViewAndImageViewForCurrentMetrics];
-            self.scrollView.transform = self.snapshotView.transform;
+            self.imageView.transform = self.snapshotView.transform;
             CGPoint centerInRect = CGPointMake(self.startingReferenceFrameForThumbnail.origin.x+self.startingReferenceFrameForThumbnail.size.width/2.0f,
                                                self.startingReferenceFrameForThumbnail.origin.y+self.startingReferenceFrameForThumbnail.size.height/2.0f);
-            [self.scrollView setCenter:centerInRect];
+            [self.imageView setCenter:centerInRect];
         }
         
         if ([self.optionsDelegate imageViewerShouldDimThumbnails:self]) {
-            [self.scrollView setAlpha:0];
+            [self.imageView setAlpha:0];
             [UIView animateWithDuration:0.15f animations:^{
-                [self.scrollView setAlpha:1];
+                [self.imageView setAlpha:1];
             }];
         }
         
@@ -416,6 +446,14 @@
              options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
              animations:^{
                  
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:YES];
+                 
+                 if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                     [weakSelf setNeedsStatusBarAppearanceUpdate];
+                 } else {
+                     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
+                 }
+                 
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
                                                                        CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
                  
@@ -427,22 +465,41 @@
                  [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
                  
                  if (mustRotateDuringTransition) {
-                     [weakSelf.scrollView setTransform:CGAffineTransformIdentity];
+                     [weakSelf.imageView setTransform:CGAffineTransformIdentity];
                  }
                  
-                 [weakSelf.scrollView setFrame:weakSelf.view.bounds];
-                 [weakSelf updateScrollViewAndImageViewForCurrentMetrics];
+                 CGRect endFrameForImageView;
+                 if (weakSelf.image) {
+                     endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakSelf.image.size];
+                 } else {
+                     endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakSelf.imageInfo.referenceRect.size];
+                 }
+                 [weakSelf.imageView setFrame:endFrameForImageView];
+                 
+                 CGPoint endCenterForImageView = CGPointMake(weakSelf.view.bounds.size.width/2.0f, weakSelf.view.bounds.size.height/2.0f);
+                 [weakSelf.imageView setCenter:endCenterForImageView];
                  
                  if (weakSelf.image == nil) {
                      [weakSelf.progressContainer setAlpha:1.0f];
                  }
                  
              } completion:^(BOOL finished) {
+                 
+                 [weakSelf setIsManuallyResizingTheScrollViewFrame:YES];
+                 [weakSelf.scrollView setFrame:weakSelf.view.bounds];
+                 [weakSelf setIsManuallyResizingTheScrollViewFrame:NO];
+                 [weakSelf.scrollView addSubview:weakSelf.imageView];
+                 
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:NO];
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
-                 [weakSelf.view setUserInteractionEnabled:YES];
                  [weakSelf setIsPresented:YES];
+                 
+                 [weakSelf updateScrollViewAndImageViewForCurrentMetrics];
+                 
                  if (weakSelf.imageDownloadFailed) {
                      [weakSelf dismiss:YES];
+                 } else {
+                     [weakSelf.view setUserInteractionEnabled:YES];
                  }
              }];
         });
@@ -467,6 +524,8 @@
     [self setLastUsedOrientation:viewController.interfaceOrientation];
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
     self.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
+    
+    [self.scrollView addSubview:self.imageView];
     
     [viewController presentViewController:self animated:NO completion:^{
         
@@ -497,6 +556,14 @@
              options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
              animations:^{
                  
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:YES];
+                 
+                 if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                     [weakSelf setNeedsStatusBarAppearanceUpdate];
+                 } else {
+                     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
+                 }
+                 
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
                                                                        CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
                  
@@ -515,6 +582,7 @@
                  }
                  
              } completion:^(BOOL finished) {
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:NO];
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
                  [weakSelf setIsPresented:YES];
@@ -572,6 +640,14 @@
              options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
              animations:^{
                  
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:YES];
+                 
+                 if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                     [weakSelf setNeedsStatusBarAppearanceUpdate];
+                 } else {
+                     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
+                 }
+                 
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
                                                                        CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
                  
@@ -588,6 +664,7 @@
                  }
                  
              } completion:^(BOOL finished) {
+                 [weakSelf setIsTransitioningFromInitialModalToInteractiveState:NO];
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
                  [weakSelf setIsPresented:YES];
@@ -669,8 +746,23 @@
                 } else {
                     [weakSelf.imageView setFrame:weakSelf.startingReferenceFrameForThumbnail];
                 }
+                
+                // Rotation not needed, so fade the status bar back in. Looks nicer.
+                if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                    [weakSelf setNeedsStatusBarAppearanceUpdate];
+                } else {
+                    [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
+                                                            withAnimation:UIStatusBarAnimationFade];
+                }
             }
         } completion:^(BOOL finished) {
+            
+            // Needed if dismissing from a different orientation then the one we started with
+            if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance == NO) {
+                [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
+                                                        withAnimation:UIStatusBarAnimationNone];
+            }
+            
             [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
                 [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
             }];
@@ -700,7 +792,14 @@
             [weakSelf.blurredSnapshotView setAlpha:0];
         }
         [weakSelf.scrollView setAlpha:0];
+        if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+            [weakSelf setNeedsStatusBarAppearanceUpdate];
+        } else {
+            [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
+                                                    withAnimation:UIStatusBarAnimationFade];
+        }
     } completion:^(BOOL finished) {
+        
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
@@ -729,6 +828,12 @@
         }
         [weakSelf.scrollView setAlpha:0];
         [weakSelf.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+            [weakSelf setNeedsStatusBarAppearanceUpdate];
+        } else {
+            [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
+                                                    withAnimation:UIStatusBarAnimationFade];
+        }
     } completion:^(BOOL finished) {
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
@@ -768,6 +873,12 @@
         }
         CGFloat targetScale = TRANSITION_THUMBNAIL_MAX_ZOOM;
         [textViewSnapshot setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
+        if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+            [weakSelf setNeedsStatusBarAppearanceUpdate];
+        } else {
+            [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
+                                                    withAnimation:UIStatusBarAnimationFade];
+        }
     } completion:^(BOOL finished) {
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
@@ -841,9 +952,12 @@
     if (image) {
         [self setImage:image];
         [self.imageView setImage:image];
-        self.scrollView.contentSize = self.scrollView.bounds.size;
-        [self updateLayoutsForCurrentOrientation];
         [self.progressContainer setAlpha:0];
+        
+        // Don't update the layouts during a drag.
+        if (self.isDraggingImage == NO) {
+            [self updateLayoutsForCurrentOrientation];
+        }
     }
 }
 
@@ -932,12 +1046,19 @@
 }
 
 - (void)updateScrollViewAndImageViewForCurrentMetrics {
-    if (self.isDismissing == NO) {
-        if (self.isAnimatingAPresentationOrDismissal == NO) {
-            [self setIsManuallyResizingTheScrollViewFrame:YES];
-            self.scrollView.frame = self.view.bounds;
-            [self setIsManuallyResizingTheScrollViewFrame:NO];
-        }
+    
+    if (self.isAnimatingAPresentationOrDismissal == NO) {
+        [self setIsManuallyResizingTheScrollViewFrame:YES];
+        self.scrollView.frame = self.view.bounds;
+        [self setIsManuallyResizingTheScrollViewFrame:NO];
+    }
+    
+    BOOL usingOriginalPositionTransition = (self.transition == JTSImageViewControllerTransition_FromOriginalPosition);
+    BOOL isAnimating = self.isAnimatingAPresentationOrDismissal;
+    
+    BOOL suppressAdjustments = (usingOriginalPositionTransition && isAnimating);
+    
+    if (suppressAdjustments == NO) {
         if (self.image) {
             [self.imageView setFrame:[self resizedFrameForAutorotatingImageView:self.image.size]];
         } else {
@@ -1250,8 +1371,13 @@
          options:UIViewAnimationOptionAllowUserInteraction |
          UIViewAnimationOptionBeginFromCurrentState
          animations:^{
-             self.imageView.transform = CGAffineTransformIdentity;
-             self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+             if (self.isDraggingImage == NO) {
+                 self.imageView.transform = CGAffineTransformIdentity;
+                 if (self.scrollView.dragging == NO && self.scrollView.decelerating == NO) {
+                     self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+                     [self updateScrollViewAndImageViewForCurrentMetrics];
+                 }
+             }
          } completion:nil];
     }
 }
