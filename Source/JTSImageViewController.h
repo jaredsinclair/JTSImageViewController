@@ -41,6 +41,9 @@ typedef NS_ENUM(NSInteger, JTSImageViewControllerBackgroundStyle) {
 
 @property (strong, nonatomic, readonly) JTSImageInfo *imageInfo;
 @property (strong, nonatomic, readonly) UIImage *image;
+@property (copy, nonatomic, readwrite) NSString *accessibilityLabel;
+@property (copy, nonatomic, readwrite) NSString *accessibilityHintZoomedIn;
+@property (copy, nonatomic, readwrite) NSString *accessibilityHintZoomedOut;
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerDismissalDelegate> dismissalDelegate;
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerOptionsDelegate> optionsDelegate;
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerInteractionsDelegate> interactionsDelegate;
@@ -93,4 +96,6 @@ typedef NS_ENUM(NSInteger, JTSImageViewControllerBackgroundStyle) {
 - (BOOL)imageViewerShouldTemporarilyIgnoreTouches:(JTSImageViewController *)imageViewer;
 
 @end
+
+
 

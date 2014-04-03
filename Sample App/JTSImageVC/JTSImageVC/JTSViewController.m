@@ -20,6 +20,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.bigImageButton addTarget:self action:@selector(bigButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self.bigImageButton setAccessibilityLabel:@"Photo of a cat wearing a Bane costume."];
 }
 
 - (NSUInteger)supportedInterfaceOrientations {

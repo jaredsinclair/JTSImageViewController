@@ -1,8 +1,8 @@
 //
 //  JTSImageViewController.m
-//  JTSead
 //
-//  Created by Jared on 3/28/14.
+//
+//  Created by Jared Sinclair on 3/28/14.
 //  Copyright (c) 2014 Nice Boy LLC. All rights reserved.
 //
 
@@ -95,6 +95,9 @@
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundStyle = backgroundStyle;
+        _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
+        _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
+        _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
         if (_mode == JTSImageViewControllerMode_Image) {
             [self setupImageAndDownloadIfNecessary:imageInfo];
         }
@@ -266,15 +269,13 @@
     self.scrollView.maximumZoomScale = 8.0f;
     self.scrollView.scrollEnabled = NO;
     self.scrollView.isAccessibilityElement = YES;
-    self.scrollView.accessibilityLabel = NSLocalizedStringFromTable(@"Full Screen Image View", @"JTSead", nil);
-    self.scrollView.accessibilityHint = NSLocalizedStringFromTable(@"Double tap to dismiss this screen. Double tap and hold for more options. Triple tap the image to zoom in and out.", @"JTSead", nil);
+    self.scrollView.accessibilityLabel = self.accessibilityLabel;
+    self.scrollView.accessibilityHint = self.accessibilityHintZoomedOut;
     [self.view addSubview:self.scrollView];
     
     self.imageView = [[UIImageView alloc] initWithFrame:self.view.bounds];
     self.imageView.contentMode = UIViewContentModeScaleAspectFit;
-    self.imageView.accessibilityLabel = NSLocalizedStringFromTable(@"Image", @"JTSead", nil);
     self.imageView.isAccessibilityElement = NO;
-    self.imageView.userInteractionEnabled = YES;
     [self.scrollView addSubview:self.imageView];
     
     [self setupImageModeGestureRecognizers];
@@ -1130,13 +1131,13 @@
     CGRect targetZoomRect;
     UIEdgeInsets targetInsets;
     if (self.scrollView.zoomScale == 1.0f) {
-        self.scrollView.accessibilityLabel = NSLocalizedStringFromTable(@"Full Screen Image View. Zoomed in.", @"JTSead", nil);
+        self.scrollView.accessibilityHint = self.accessibilityHintZoomedIn;
         CGFloat zoomWidth = self.view.bounds.size.width / DOUBLE_TAP_TARGET_ZOOM;
         CGFloat zoomHeight = self.view.bounds.size.height / DOUBLE_TAP_TARGET_ZOOM;
         targetZoomRect = CGRectMake(point.x - (zoomWidth/2.0f), point.y - (zoomHeight/2.0f), zoomWidth, zoomHeight);
         targetInsets = [self contentInsetForScrollView:DOUBLE_TAP_TARGET_ZOOM];
     } else {
-        self.scrollView.accessibilityLabel = NSLocalizedStringFromTable(@"Full Screen Image View. Zoomed out.", @"JTSead", nil);
+        self.scrollView.accessibilityHint = self.accessibilityHintZoomedOut;
         CGFloat zoomWidth = self.view.bounds.size.width * self.scrollView.zoomScale;
         CGFloat zoomHeight = self.view.bounds.size.height * self.scrollView.zoomScale;
         targetZoomRect = CGRectMake(point.x - (zoomWidth/2.0f), point.y - (zoomHeight/2.0f), zoomWidth, zoomHeight);
@@ -1333,6 +1334,35 @@
         progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
     }
     [self.progressView setProgress:progress];
+}
+
+#pragma mark - Accessibility
+
+- (NSString *)defaultAccessibilityLabelForScrollView {
+    
+    return @"Full-Screen Image Viewer";
+}
+
+- (NSString *)defaultAccessibilityHintForScrollView:(BOOL)zoomedIn {
+
+    NSString *hint = nil;
+    
+    if (zoomedIn) {
+        hint = @"\
+                Image is zoomed in. \
+                Pan around the image using three fingers. \
+                Double tap to dismiss this screen. \
+                Double tap and hold for more options. \
+                Triple tap the image to zoom out.";
+    } else {
+        hint = @"\
+                Image is zoomed out. \
+                Double tap to dismiss this screen. \
+                Double tap and hold for more options. \
+                Triple tap the image to zoom in.";
+    }
+    
+    return hint;
 }
 
 @end
