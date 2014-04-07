@@ -1300,7 +1300,7 @@
 
 - (void)dismissingPanGestureRecognizerPanned:(UIPanGestureRecognizer *)panner {
     
-    if (self.scrollViewIsAnimatingAZoom) {
+    if (self.scrollViewIsAnimatingAZoom || self.isAnimatingAPresentationOrDismissal) {
         return;
     }
     
