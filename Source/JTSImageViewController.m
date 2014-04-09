@@ -84,6 +84,7 @@
 #define BLACK_BACKDROP_ALPHA_NORMAL 0.8f
 #define USE_DEBUG_SLOW_ANIMATIONS 0
 #define DEFAULT_TRANSITION_DURATION 0.28f
+#define MINIMUM_FLICK_DISMISSAL_VELOCITY 800.0f
 
 @implementation JTSImageViewController
 
@@ -375,6 +376,47 @@
     [self.view addSubview:self.textView];
     
     [self setupTextViewTapGestureRecognizer];
+}
+
+- (void)setupImageModeGestureRecognizers {
+    
+    UITapGestureRecognizer *doubleTapper = nil;
+    doubleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageDoubleTapped:)];
+    doubleTapper.numberOfTapsRequired = 2;
+    doubleTapper.delegate = self;
+    self.doubleTapperPhoto = doubleTapper;
+    
+    UILongPressGestureRecognizer *longPresser = [[UILongPressGestureRecognizer alloc] init];
+    [longPresser addTarget:self action:@selector(imageLongPressed:)];
+    longPresser.delegate = self;
+    self.longPresserPhoto = longPresser;
+    
+    UITapGestureRecognizer *singleTapper = nil;
+    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
+    [singleTapper requireGestureRecognizerToFail:doubleTapper];
+    [singleTapper requireGestureRecognizerToFail:longPresser];
+    singleTapper.delegate = self;
+    self.singleTapperPhoto = singleTapper;
+    
+    UIPanGestureRecognizer *panner = [[UIPanGestureRecognizer alloc] init];
+    [panner addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
+    [panner setDelegate:self];
+    [self.scrollView addGestureRecognizer:panner];
+    [self setPanRecognizer:panner];
+    
+    [self.view addGestureRecognizer:singleTapper];
+    [self.view addGestureRecognizer:doubleTapper];
+    [self.view addGestureRecognizer:longPresser];
+}
+
+- (void)setupTextViewTapGestureRecognizer {
+    
+    UITapGestureRecognizer *singleTapper = nil;
+    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(textViewSingleTapped:)];
+    [singleTapper setDelegate:self];
+    self.singleTapperText = singleTapper;
+    
+    [self.textView addGestureRecognizer:singleTapper];
 }
 
 #pragma mark - Presentation
@@ -1201,48 +1243,7 @@
     } completion:nil];
 }
 
-#pragma mark - Gesture Recognition
-
-- (void)setupImageModeGestureRecognizers {
-    
-    UITapGestureRecognizer *doubleTapper = nil;
-    doubleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageDoubleTapped:)];
-    doubleTapper.numberOfTapsRequired = 2;
-    doubleTapper.delegate = self;
-    self.doubleTapperPhoto = doubleTapper;
-    
-    UILongPressGestureRecognizer *longPresser = [[UILongPressGestureRecognizer alloc] init];
-    [longPresser addTarget:self action:@selector(imageLongPressed:)];
-    longPresser.delegate = self;
-    self.longPresserPhoto = longPresser;
-    
-    UITapGestureRecognizer *singleTapper = nil;
-    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
-    [singleTapper requireGestureRecognizerToFail:doubleTapper];
-    [singleTapper requireGestureRecognizerToFail:longPresser];
-    singleTapper.delegate = self;
-    self.singleTapperPhoto = singleTapper;
-    
-    UIPanGestureRecognizer *panner = [[UIPanGestureRecognizer alloc] init];
-    [panner addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
-    [panner setDelegate:self];
-    [self.scrollView addGestureRecognizer:panner];
-    [self setPanRecognizer:panner];
-    
-    [self.view addGestureRecognizer:singleTapper];
-    [self.view addGestureRecognizer:doubleTapper];
-    [self.view addGestureRecognizer:longPresser];
-}
-
-- (void)setupTextViewTapGestureRecognizer {
-    
-    UITapGestureRecognizer *singleTapper = nil;
-    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
-    [singleTapper setDelegate:self];
-    self.singleTapperText = singleTapper;
-    
-    [self.textView addGestureRecognizer:singleTapper];
-}
+#pragma mark - Gesture Recognizer Actions
 
 - (void)imageDoubleTapped:(UITapGestureRecognizer *)sender {
     
@@ -1330,7 +1331,7 @@
         }
     }
     else {
-        if (vectorDistance > 800) {
+        if (vectorDistance > MINIMUM_FLICK_DISMISSAL_VELOCITY) {
             if (self.isDraggingImage) {
                 [self dismissImageWithFlick:velocity];
             } else {
@@ -1342,6 +1343,12 @@
         }
     }
 }
+
+- (void)textViewSingleTapped:(id)sender {
+    [self dismiss:YES];
+}
+
+#pragma mark - Dynamic Image Dragging
 
 - (void)startImageDragging:(CGPoint)panGestureLocationInView translationOffset:(UIOffset)translationOffset {
     self.imageDragStartingPoint = panGestureLocationInView;
