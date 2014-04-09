@@ -102,6 +102,7 @@
         _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
         _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
         _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
+        self.hideSpinner = NO;
         if (_mode == JTSImageViewControllerMode_Image) {
             [self setupImageAndDownloadIfNecessary:imageInfo];
         }
@@ -321,10 +322,14 @@
     self.progressView.center = CGPointMake(64.0f, 64.0f);
     self.progressView.alpha = 0;
     [self.progressContainer addSubview:self.progressView];
-    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    self.spinner.center = CGPointMake(64.0f, 64.0f);
-    [self.spinner startAnimating];
-    [self.progressContainer addSubview:self.spinner];
+    
+    if (self.hideSpinner==NO) {
+        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        self.spinner.center = CGPointMake(64.0f, 64.0f);
+        [self.spinner startAnimating];
+        [self.progressContainer addSubview:self.spinner];
+    }
+    
     [self.progressContainer setAlpha:0];
     
     self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.scrollView];

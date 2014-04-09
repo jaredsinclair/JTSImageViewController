@@ -41,6 +41,7 @@ typedef NS_ENUM(NSInteger, JTSImageViewControllerBackgroundStyle) {
 
 @property (strong, nonatomic, readonly) JTSImageInfo *imageInfo;
 @property (strong, nonatomic, readonly) UIImage *image;
+@property (nonatomic) BOOL hideSpinner; // hide the first loading indicator
 @property (copy, nonatomic, readwrite) NSString *accessibilityLabel;
 @property (copy, nonatomic, readwrite) NSString *accessibilityHintZoomedIn;
 @property (copy, nonatomic, readwrite) NSString *accessibilityHintZoomedOut;
