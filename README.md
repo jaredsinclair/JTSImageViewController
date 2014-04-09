@@ -47,7 +47,7 @@ That's it.
 
 - **Handle Long-Presses:** Implement an `interactionsDelegate` to respond to long presses on the image, or to temporarily disable user interactions (comes in handy if you show an overlay that could cause gesture conflict).
 
-### Pull Requests
+## Pull Requests
 
 Pull requests should be submitted on the `dev` branch. Exceptions will be made for critical bug fixes, naturally.
 
