@@ -84,6 +84,7 @@
 #define BLACK_BACKDROP_ALPHA_NORMAL 0.8f
 #define USE_DEBUG_SLOW_ANIMATIONS 0
 #define DEFAULT_TRANSITION_DURATION 0.28f
+#define MINIMUM_FLICK_DISMISSAL_VELOCITY 800.0f
 
 @implementation JTSImageViewController
 
@@ -377,6 +378,47 @@
     [self setupTextViewTapGestureRecognizer];
 }
 
+- (void)setupImageModeGestureRecognizers {
+    
+    UITapGestureRecognizer *doubleTapper = nil;
+    doubleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageDoubleTapped:)];
+    doubleTapper.numberOfTapsRequired = 2;
+    doubleTapper.delegate = self;
+    self.doubleTapperPhoto = doubleTapper;
+    
+    UILongPressGestureRecognizer *longPresser = [[UILongPressGestureRecognizer alloc] init];
+    [longPresser addTarget:self action:@selector(imageLongPressed:)];
+    longPresser.delegate = self;
+    self.longPresserPhoto = longPresser;
+    
+    UITapGestureRecognizer *singleTapper = nil;
+    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
+    [singleTapper requireGestureRecognizerToFail:doubleTapper];
+    [singleTapper requireGestureRecognizerToFail:longPresser];
+    singleTapper.delegate = self;
+    self.singleTapperPhoto = singleTapper;
+    
+    UIPanGestureRecognizer *panner = [[UIPanGestureRecognizer alloc] init];
+    [panner addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
+    [panner setDelegate:self];
+    [self.scrollView addGestureRecognizer:panner];
+    [self setPanRecognizer:panner];
+    
+    [self.view addGestureRecognizer:singleTapper];
+    [self.view addGestureRecognizer:doubleTapper];
+    [self.view addGestureRecognizer:longPresser];
+}
+
+- (void)setupTextViewTapGestureRecognizer {
+    
+    UITapGestureRecognizer *singleTapper = nil;
+    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(textViewSingleTapped:)];
+    [singleTapper setDelegate:self];
+    self.singleTapperText = singleTapper;
+    
+    [self.textView addGestureRecognizer:singleTapper];
+}
+
 #pragma mark - Presentation
 
 - (void)_showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController {
@@ -616,21 +658,29 @@
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
     self.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
-    [viewController presentViewController:self animated:NO completion:^{
+    __weak JTSImageViewController *weakSelf = self;
+    
+    [viewController presentViewController:weakSelf animated:NO completion:^{
         
-        if (self.interfaceOrientation != self.startingInterfaceOrientation) {
-            [self setPresentingViewControllerPresentedFromItsUnsupportedOrientation:YES];
+        if (weakSelf.interfaceOrientation != weakSelf.startingInterfaceOrientation) {
+            [weakSelf setPresentingViewControllerPresentedFromItsUnsupportedOrientation:YES];
         }
         
-        [self.textView setAlpha:0];
-        [self.textView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        // Replace the text view with a snapshot of itself,
+        // to prevent the text from reflowing during the dismissal animation.
+        [weakSelf verticallyCenterTextInTextView];
+        UIView *textViewSnapshot = [weakSelf.textView snapshotViewAfterScreenUpdates:YES];
+        [textViewSnapshot setFrame:weakSelf.textView.frame];
+        [weakSelf.textView.superview insertSubview:textViewSnapshot aboveSubview:self.textView];
+        [weakSelf.textView setHidden:YES];
+        
+        [textViewSnapshot setAlpha:0];
+        [textViewSnapshot setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
         
         CGFloat duration = DEFAULT_TRANSITION_DURATION;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
-        
-        __weak JTSImageViewController *weakSelf = self;
         
         // Have to dispatch to the next runloop,
         // or else the image view changes above won't be
@@ -661,12 +711,14 @@
                  [weakSelf addMotionEffectsToSnapshotView];
                  [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
                  
-                 if (_mode == JTSImageViewControllerMode_AltText) {
-                     [weakSelf.textView setAlpha:1.0];
-                     [weakSelf.textView setTransform:CGAffineTransformIdentity];
-                 }
+                 [textViewSnapshot setAlpha:1.0];
+                 [textViewSnapshot setTransform:CGAffineTransformIdentity];
                  
              } completion:^(BOOL finished) {
+                 
+                 [textViewSnapshot removeFromSuperview];
+                 [weakSelf.textView setHidden:NO];
+                 
                  [weakSelf setIsTransitioningFromInitialModalToInteractiveState:NO];
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
@@ -971,14 +1023,9 @@
         self.progressContainer.center = CGPointMake(self.view.bounds.size.width/2.0f, self.view.bounds.size.height/2.0f);
     }
     else if (self.mode == JTSImageViewControllerMode_AltText) {
-        CGRect boundingRect = [self.textView.layoutManager usedRectForTextContainer:self.textView.textContainer];
-        UIEdgeInsets insets = self.textView.contentInset;
-        if (self.view.bounds.size.height > boundingRect.size.height) {
-            insets.top = roundf(self.view.bounds.size.height-boundingRect.size.height)/2.0f;
-        } else {
-            insets.top = 0;
+        if (self.isTransitioningFromInitialModalToInteractiveState == NO) {
+            [self verticallyCenterTextInTextView];
         }
-        [self.textView setContentInset:insets];
     }
     
     CGAffineTransform transform = CGAffineTransformIdentity;
@@ -1070,6 +1117,18 @@
         self.scrollView.contentSize = self.imageView.frame.size;
         self.scrollView.contentInset = [self contentInsetForScrollView:self.scrollView.zoomScale];
     }
+}
+
+- (void)verticallyCenterTextInTextView {
+    CGRect boundingRect = [self.textView.layoutManager usedRectForTextContainer:self.textView.textContainer];
+    UIEdgeInsets insets = self.textView.contentInset;
+    if (self.view.bounds.size.height > boundingRect.size.height) {
+        insets.top = roundf(self.view.bounds.size.height-boundingRect.size.height)/2.0f;
+    } else {
+        insets.top = 0;
+    }
+    [self.textView setContentInset:insets];
+    [self.textView setContentOffset:CGPointMake(0, 0 - insets.top)];
 }
 
 - (UIEdgeInsets)contentInsetForScrollView:(CGFloat)targetZoomScale {
@@ -1201,48 +1260,7 @@
     } completion:nil];
 }
 
-#pragma mark - Gesture Recognition
-
-- (void)setupImageModeGestureRecognizers {
-    
-    UITapGestureRecognizer *doubleTapper = nil;
-    doubleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageDoubleTapped:)];
-    doubleTapper.numberOfTapsRequired = 2;
-    doubleTapper.delegate = self;
-    self.doubleTapperPhoto = doubleTapper;
-    
-    UILongPressGestureRecognizer *longPresser = [[UILongPressGestureRecognizer alloc] init];
-    [longPresser addTarget:self action:@selector(imageLongPressed:)];
-    longPresser.delegate = self;
-    self.longPresserPhoto = longPresser;
-    
-    UITapGestureRecognizer *singleTapper = nil;
-    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
-    [singleTapper requireGestureRecognizerToFail:doubleTapper];
-    [singleTapper requireGestureRecognizerToFail:longPresser];
-    singleTapper.delegate = self;
-    self.singleTapperPhoto = singleTapper;
-    
-    UIPanGestureRecognizer *panner = [[UIPanGestureRecognizer alloc] init];
-    [panner addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
-    [panner setDelegate:self];
-    [self.scrollView addGestureRecognizer:panner];
-    [self setPanRecognizer:panner];
-    
-    [self.view addGestureRecognizer:singleTapper];
-    [self.view addGestureRecognizer:doubleTapper];
-    [self.view addGestureRecognizer:longPresser];
-}
-
-- (void)setupTextViewTapGestureRecognizer {
-    
-    UITapGestureRecognizer *singleTapper = nil;
-    singleTapper = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageSingleTapped:)];
-    [singleTapper setDelegate:self];
-    self.singleTapperText = singleTapper;
-    
-    [self.textView addGestureRecognizer:singleTapper];
-}
+#pragma mark - Gesture Recognizer Actions
 
 - (void)imageDoubleTapped:(UITapGestureRecognizer *)sender {
     
@@ -1300,7 +1318,7 @@
 
 - (void)dismissingPanGestureRecognizerPanned:(UIPanGestureRecognizer *)panner {
     
-    if (self.scrollViewIsAnimatingAZoom) {
+    if (self.scrollViewIsAnimatingAZoom || self.isAnimatingAPresentationOrDismissal) {
         return;
     }
     
@@ -1330,7 +1348,7 @@
         }
     }
     else {
-        if (vectorDistance > 800) {
+        if (vectorDistance > MINIMUM_FLICK_DISMISSAL_VELOCITY) {
             if (self.isDraggingImage) {
                 [self dismissImageWithFlick:velocity];
             } else {
@@ -1342,6 +1360,12 @@
         }
     }
 }
+
+- (void)textViewSingleTapped:(id)sender {
+    [self dismiss:YES];
+}
+
+#pragma mark - Dynamic Image Dragging
 
 - (void)startImageDragging:(CGPoint)panGestureLocationInView translationOffset:(UIOffset)translationOffset {
     self.imageDragStartingPoint = panGestureLocationInView;
