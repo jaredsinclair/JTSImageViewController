@@ -658,21 +658,29 @@
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
     self.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
-    [viewController presentViewController:self animated:NO completion:^{
+    __weak JTSImageViewController *weakSelf = self;
+    
+    [viewController presentViewController:weakSelf animated:NO completion:^{
         
-        if (self.interfaceOrientation != self.startingInterfaceOrientation) {
-            [self setPresentingViewControllerPresentedFromItsUnsupportedOrientation:YES];
+        if (weakSelf.interfaceOrientation != weakSelf.startingInterfaceOrientation) {
+            [weakSelf setPresentingViewControllerPresentedFromItsUnsupportedOrientation:YES];
         }
         
-        [self.textView setAlpha:0];
-        [self.textView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        // Replace the text view with a snapshot of itself,
+        // to prevent the text from reflowing during the dismissal animation.
+        [weakSelf verticallyCenterTextInTextView];
+        UIView *textViewSnapshot = [weakSelf.textView snapshotViewAfterScreenUpdates:YES];
+        [textViewSnapshot setFrame:weakSelf.textView.frame];
+        [weakSelf.textView.superview insertSubview:textViewSnapshot aboveSubview:self.textView];
+        [weakSelf.textView setHidden:YES];
+        
+        [textViewSnapshot setAlpha:0];
+        [textViewSnapshot setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
         
         CGFloat duration = DEFAULT_TRANSITION_DURATION;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
-        
-        __weak JTSImageViewController *weakSelf = self;
         
         // Have to dispatch to the next runloop,
         // or else the image view changes above won't be
@@ -703,12 +711,14 @@
                  [weakSelf addMotionEffectsToSnapshotView];
                  [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
                  
-                 if (_mode == JTSImageViewControllerMode_AltText) {
-                     [weakSelf.textView setAlpha:1.0];
-                     [weakSelf.textView setTransform:CGAffineTransformIdentity];
-                 }
+                 [textViewSnapshot setAlpha:1.0];
+                 [textViewSnapshot setTransform:CGAffineTransformIdentity];
                  
              } completion:^(BOOL finished) {
+                 
+                 [textViewSnapshot removeFromSuperview];
+                 [weakSelf.textView setHidden:NO];
+                 
                  [weakSelf setIsTransitioningFromInitialModalToInteractiveState:NO];
                  [weakSelf setIsAnimatingAPresentationOrDismissal:NO];
                  [weakSelf.view setUserInteractionEnabled:YES];
@@ -1013,14 +1023,9 @@
         self.progressContainer.center = CGPointMake(self.view.bounds.size.width/2.0f, self.view.bounds.size.height/2.0f);
     }
     else if (self.mode == JTSImageViewControllerMode_AltText) {
-        CGRect boundingRect = [self.textView.layoutManager usedRectForTextContainer:self.textView.textContainer];
-        UIEdgeInsets insets = self.textView.contentInset;
-        if (self.view.bounds.size.height > boundingRect.size.height) {
-            insets.top = roundf(self.view.bounds.size.height-boundingRect.size.height)/2.0f;
-        } else {
-            insets.top = 0;
+        if (self.isTransitioningFromInitialModalToInteractiveState == NO) {
+            [self verticallyCenterTextInTextView];
         }
-        [self.textView setContentInset:insets];
     }
     
     CGAffineTransform transform = CGAffineTransformIdentity;
@@ -1112,6 +1117,18 @@
         self.scrollView.contentSize = self.imageView.frame.size;
         self.scrollView.contentInset = [self contentInsetForScrollView:self.scrollView.zoomScale];
     }
+}
+
+- (void)verticallyCenterTextInTextView {
+    CGRect boundingRect = [self.textView.layoutManager usedRectForTextContainer:self.textView.textContainer];
+    UIEdgeInsets insets = self.textView.contentInset;
+    if (self.view.bounds.size.height > boundingRect.size.height) {
+        insets.top = roundf(self.view.bounds.size.height-boundingRect.size.height)/2.0f;
+    } else {
+        insets.top = 0;
+    }
+    [self.textView setContentInset:insets];
+    [self.textView setContentOffset:CGPointMake(0, 0 - insets.top)];
 }
 
 - (UIEdgeInsets)contentInsetForScrollView:(CGFloat)targetZoomScale {
