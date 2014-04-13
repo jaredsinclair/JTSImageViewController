@@ -962,7 +962,7 @@
     UIGraphicsBeginImageContextWithOptions(contextBounds.size, YES, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextConcatCTM(context, CGAffineTransformMakeTranslation(outerBleed, outerBleed));
-    [presentingViewController.view.layer renderInContext:context];
+    [presentingViewController.view drawViewHierarchyInRect:presentingViewController.view.frame afterScreenUpdates:YES];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
