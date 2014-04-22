@@ -1433,8 +1433,11 @@
     CGFloat actualArea = height * width;
     CGFloat referenceArea = self.view.bounds.size.width * self.view.bounds.size.height;
     CGFloat factor = referenceArea / actualArea;
-    CGFloat defaultDensity = 0.5f;
-    return defaultDensity * factor;
+    CGFloat defaultDensity = 0.5f; // Feels good on iPhone 5s. We'll adjust this to match the current display.
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    CGFloat appropriateDensity = defaultDensity * ((320.0 * 568.0) / (screenWidth * screenHeight));
+    return appropriateDensity * factor;
 }
 
 - (BOOL)imageViewIsOffscreen {
