@@ -1176,7 +1176,7 @@
 }
 
 - (CGRect)resizedFrameForAutorotatingImageView:(CGSize)imageSize {
-    CGRect frame = self.scrollView.bounds;
+    CGRect frame = self.view.bounds;
     CGFloat screenWidth = frame.size.width * self.scrollView.zoomScale;
     CGFloat screenHeight = frame.size.height * self.scrollView.zoomScale;
     CGFloat targetWidth = screenWidth;
@@ -1433,10 +1433,10 @@
     CGFloat actualArea = height * width;
     CGFloat referenceArea = self.view.bounds.size.width * self.view.bounds.size.height;
     CGFloat factor = referenceArea / actualArea;
-    CGFloat defaultDensity = 0.5f; // Feels good on iPhone 5s. We'll adjust this to match the current display.
+    CGFloat defaultDensity = 0.5f; // Feels good on 3.5 inch displays. We'll adjust this to match the current display.
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-    CGFloat appropriateDensity = defaultDensity * ((320.0 * 568.0) / (screenWidth * screenHeight));
+    CGFloat appropriateDensity = defaultDensity * ((320.0 * 480.0) / (screenWidth * screenHeight));
     return appropriateDensity * factor;
 }
 
