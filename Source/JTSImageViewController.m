@@ -171,7 +171,7 @@
 #pragma mark - UIViewController
 
 - (NSUInteger)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskAllButUpsideDown;
+    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (BOOL)shouldAutorotate {
@@ -1039,6 +1039,26 @@
                 transform = CGAffineTransformMakeRotation(-M_PI/2.0f);
                 break;
             case UIInterfaceOrientationPortrait:
+                transform = CGAffineTransformIdentity;
+                break;
+            case UIInterfaceOrientationPortraitUpsideDown:
+                transform = CGAffineTransformMakeRotation(M_PI);
+                break;
+            default:
+                break;
+        }
+    }
+    else if (self.startingInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown) {
+        switch (self.interfaceOrientation) {
+            case UIInterfaceOrientationLandscapeLeft:
+                transform = CGAffineTransformMakeRotation(-M_PI/2.0f);
+                break;
+            case UIInterfaceOrientationLandscapeRight:
+                transform = CGAffineTransformMakeRotation(M_PI/2.0f);
+                break;
+            case UIInterfaceOrientationPortrait:
+                transform = CGAffineTransformMakeRotation(M_PI);
+                break;
             case UIInterfaceOrientationPortraitUpsideDown:
                 transform = CGAffineTransformIdentity;
                 break;
@@ -1055,8 +1075,10 @@
                 transform = CGAffineTransformMakeRotation(M_PI);
                 break;
             case UIInterfaceOrientationPortrait:
-            case UIInterfaceOrientationPortraitUpsideDown:
                 transform = CGAffineTransformMakeRotation(-M_PI/2.0f);
+                break;
+            case UIInterfaceOrientationPortraitUpsideDown:
+                transform = CGAffineTransformMakeRotation(M_PI/2.0f);
                 break;
             default:
                 break;
@@ -1071,8 +1093,10 @@
                 transform = CGAffineTransformIdentity;
                 break;
             case UIInterfaceOrientationPortrait:
-            case UIInterfaceOrientationPortraitUpsideDown:
                 transform = CGAffineTransformMakeRotation(M_PI/2.0f);
+                break;
+            case UIInterfaceOrientationPortraitUpsideDown:
+                transform = CGAffineTransformMakeRotation(-M_PI/2.0f);
                 break;
             default:
                 break;
