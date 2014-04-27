@@ -12,6 +12,17 @@
 #import "UIImage+JTSImageEffects.h"
 #import "UIApplication+JTSImageViewController.h"
 
+// Public Constants
+CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0.66f;
+CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius = 2.0f;
+
+// Private Constants
+CGFloat const JTSImageViewController_MinimumBackgroundScaling = 0.94f;
+CGFloat const JTSImageViewController_TargetZoomForDoubleTap = 3.0f;
+CGFloat const JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition = 1.25f;
+CGFloat const JTSImageViewController_TransitionAnimationDuration = 0.28f;
+CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
+
 @interface JTSImageViewController ()
 <
     UIScrollViewDelegate,
@@ -78,13 +89,7 @@
 
 @end
 
-#define MAX_BACK_SCALING 0.94
-#define DOUBLE_TAP_TARGET_ZOOM 3.0f
-#define TRANSITION_THUMBNAIL_MAX_ZOOM 1.25f
-#define BLACK_BACKDROP_ALPHA_NORMAL 0.8f
 #define USE_DEBUG_SLOW_ANIMATIONS 0
-#define DEFAULT_TRANSITION_DURATION 0.28f
-#define MINIMUM_FLICK_DISMISSAL_VELOCITY 800.0f
 
 @implementation JTSImageViewController
 
@@ -96,6 +101,8 @@
     
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        _backgroundBlurRadius = JTSImageViewController_DefaultBackgroundBlurRadius;
+        _alphaForBackgroundDimmingOverlay = JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
         _imageInfo = imageInfo;
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
@@ -158,6 +165,18 @@
                 [self _dismissByExpandingImageToOffscreenPosition];
             }
         }
+    }
+}
+
+- (void)setBackgroundBlurRadius:(CGFloat)backgroundBlurRadius {
+    if (self.isAnimatingAPresentationOrDismissal == NO && self.isPresented == NO) {
+        _backgroundBlurRadius = backgroundBlurRadius;
+    }
+}
+
+- (void)setAlphaForBackgroundDimmingOverlay:(CGFloat)alphaForBackgroundDimmingOverlay {
+    if (self.isAnimatingAPresentationOrDismissal == NO && self.isPresented == NO) {
+        _alphaForBackgroundDimmingOverlay = alphaForBackgroundDimmingOverlay;
     }
 }
 
@@ -473,7 +492,7 @@
             }];
         }
         
-        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
@@ -499,15 +518,15 @@
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
-                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
                      [weakSelf.blurredSnapshotView setAlpha:1];
                  }
                  
                  [weakSelf addMotionEffectsToSnapshotView];
-                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 [weakSelf.blackBackdrop setAlpha:self.alphaForBackgroundDimmingOverlay];
                  
                  if (mustRotateDuringTransition) {
                      [weakSelf.imageView setTransform:CGAffineTransformIdentity];
@@ -581,9 +600,10 @@
         [self.scrollView setAlpha:0];
         [self.scrollView setFrame:self.view.bounds];
         [self updateScrollViewAndImageViewForCurrentMetrics];
-        [self.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        CGFloat scaling = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
+        [self.scrollView setTransform:CGAffineTransformMakeScale(scaling, scaling)];
         
-        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
@@ -609,15 +629,15 @@
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
-                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
                      [weakSelf.blurredSnapshotView setAlpha:1];
                  }
                  
                  [weakSelf addMotionEffectsToSnapshotView];
-                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 [weakSelf.blackBackdrop setAlpha:self.alphaForBackgroundDimmingOverlay];
                  
                  [weakSelf.scrollView setAlpha:1.0f];
                  [weakSelf.scrollView setTransform:CGAffineTransformIdentity];
@@ -675,9 +695,10 @@
         [weakSelf.textView setHidden:YES];
         
         [textViewSnapshot setAlpha:0];
-        [textViewSnapshot setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        CGFloat scaling = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
+        [textViewSnapshot setTransform:CGAffineTransformMakeScale(scaling, scaling)];
         
-        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
@@ -701,15 +722,15 @@
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform,
-                                                                       CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
                      [weakSelf.blurredSnapshotView setAlpha:1];
                  }
                  
                  [weakSelf addMotionEffectsToSnapshotView];
-                 [weakSelf.blackBackdrop setAlpha:BLACK_BACKDROP_ALPHA_NORMAL];
+                 [weakSelf.blackBackdrop setAlpha:self.alphaForBackgroundDimmingOverlay];
                  
                  [textViewSnapshot setAlpha:1.0];
                  [textViewSnapshot setTransform:CGAffineTransformIdentity];
@@ -761,7 +782,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        CGFloat duration = DEFAULT_TRANSITION_DURATION;
+        CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
@@ -834,7 +855,7 @@
     
     __weak JTSImageViewController *weakSelf = self;
     
-    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
     if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
         duration *= 4;
     }
@@ -869,7 +890,7 @@
     
     __weak JTSImageViewController *weakSelf = self;
     
-    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
     if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
         duration *= 4;
     }
@@ -882,7 +903,8 @@
             [weakSelf.blurredSnapshotView setAlpha:0];
         }
         [weakSelf.scrollView setAlpha:0];
-        [weakSelf.scrollView setTransform:CGAffineTransformMakeScale(TRANSITION_THUMBNAIL_MAX_ZOOM, TRANSITION_THUMBNAIL_MAX_ZOOM)];
+        CGFloat scaling = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
+        [weakSelf.scrollView setTransform:CGAffineTransformMakeScale(scaling, scaling)];
         if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
             [weakSelf setNeedsStatusBarAppearanceUpdate];
         } else {
@@ -904,7 +926,7 @@
     
     __weak JTSImageViewController *weakSelf = self;
     
-    CGFloat duration = DEFAULT_TRANSITION_DURATION;
+    CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
     if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
         duration *= 4;
     }
@@ -926,7 +948,7 @@
         if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
             [weakSelf.blurredSnapshotView setAlpha:0];
         }
-        CGFloat targetScale = TRANSITION_THUMBNAIL_MAX_ZOOM;
+        CGFloat targetScale = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
         [textViewSnapshot setTransform:CGAffineTransformMakeScale(targetScale, targetScale)];
         if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
             [weakSelf setNeedsStatusBarAppearanceUpdate];
@@ -967,7 +989,7 @@
     
     UIGraphicsEndImageContext();
     
-    UIImage *blurredImage = [image JTS_applyBlurWithRadius:3.0f tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
+    UIImage *blurredImage = [image JTS_applyBlurWithRadius:self.backgroundBlurRadius tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:contextBounds];
     [imageView setImage:blurredImage];
     [imageView setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
@@ -1112,7 +1134,8 @@
             if (self.mode == JTSImageViewControllerMode_Image) {
                 self.scrollView.frame = self.view.bounds;
             }
-            self.snapshotView.transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(MAX_BACK_SCALING, MAX_BACK_SCALING));
+            CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+            self.snapshotView.transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaling, scaling));
         } else {
             self.snapshotView.transform = transform;
         }
@@ -1277,7 +1300,7 @@
 #pragma mark - Update Dimming View for Zoom Scale
 
 - (void)updateDimmingViewForCurrentZoomScale:(BOOL)animated {
-    CGFloat targetAlpha = (self.scrollView.zoomScale > 1) ? 1.0f : BLACK_BACKDROP_ALPHA_NORMAL;
+    CGFloat targetAlpha = (self.scrollView.zoomScale > 1) ? 1.0f : self.alphaForBackgroundDimmingOverlay;
     CGFloat duration = (animated) ? 0.35 : 0;
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState animations:^{
         [self.blackBackdrop setAlpha:targetAlpha];
@@ -1298,10 +1321,10 @@
     UIEdgeInsets targetInsets;
     if (self.scrollView.zoomScale == 1.0f) {
         self.scrollView.accessibilityHint = self.accessibilityHintZoomedIn;
-        CGFloat zoomWidth = self.view.bounds.size.width / DOUBLE_TAP_TARGET_ZOOM;
-        CGFloat zoomHeight = self.view.bounds.size.height / DOUBLE_TAP_TARGET_ZOOM;
+        CGFloat zoomWidth = self.view.bounds.size.width / JTSImageViewController_TargetZoomForDoubleTap;
+        CGFloat zoomHeight = self.view.bounds.size.height / JTSImageViewController_TargetZoomForDoubleTap;
         targetZoomRect = CGRectMake(point.x - (zoomWidth/2.0f), point.y - (zoomHeight/2.0f), zoomWidth, zoomHeight);
-        targetInsets = [self contentInsetForScrollView:DOUBLE_TAP_TARGET_ZOOM];
+        targetInsets = [self contentInsetForScrollView:JTSImageViewController_TargetZoomForDoubleTap];
     } else {
         self.scrollView.accessibilityHint = self.accessibilityHintZoomedOut;
         CGFloat zoomWidth = self.view.bounds.size.width * self.scrollView.zoomScale;
@@ -1372,7 +1395,7 @@
         }
     }
     else {
-        if (vectorDistance > MINIMUM_FLICK_DISMISSAL_VELOCITY) {
+        if (vectorDistance > JTSImageViewController_MinimumFlickDismissalVelocity) {
             if (self.isDraggingImage) {
                 [self dismissImageWithFlick:velocity];
             } else {
