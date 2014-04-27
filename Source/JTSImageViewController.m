@@ -980,16 +980,26 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
     
     CGFloat outerBleed = 20.0f;
+    CGFloat performanceDownScalingFactor = 0.25f;
+    CGFloat scaledOuterBleed = outerBleed * performanceDownScalingFactor;
     CGRect contextBounds = CGRectInset(presentingViewController.view.bounds, -outerBleed, -outerBleed);
-    UIGraphicsBeginImageContextWithOptions(contextBounds.size, YES, 0);
+    CGRect scaledBounds = contextBounds;
+    scaledBounds.size.width *= performanceDownScalingFactor;
+    scaledBounds.size.height *= performanceDownScalingFactor;
+    CGRect scaledDrawingArea = presentingViewController.view.frame;
+    scaledDrawingArea.size.width *= performanceDownScalingFactor;
+    scaledDrawingArea.size.height *= performanceDownScalingFactor;
+    
+    UIGraphicsBeginImageContextWithOptions(scaledBounds.size, YES, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextConcatCTM(context, CGAffineTransformMakeTranslation(outerBleed, outerBleed));
-    [presentingViewController.view drawViewHierarchyInRect:presentingViewController.view.frame afterScreenUpdates:YES];
+    CGContextConcatCTM(context, CGAffineTransformMakeTranslation(scaledOuterBleed, scaledOuterBleed));
+    [presentingViewController.view drawViewHierarchyInRect:scaledDrawingArea afterScreenUpdates:YES];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
     
-    UIImage *blurredImage = [image JTS_applyBlurWithRadius:self.backgroundBlurRadius tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
+    CGFloat blurRadius = self.backgroundBlurRadius * performanceDownScalingFactor;
+    UIImage *blurredImage = [image JTS_applyBlurWithRadius:blurRadius tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:contextBounds];
     [imageView setImage:blurredImage];
     [imageView setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
