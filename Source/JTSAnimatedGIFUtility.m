@@ -57,6 +57,8 @@ static int sum(size_t const count, int const *const values) {
 }
 
 static int pairGCD(int a, int b) {
+    if (b == 0)
+        return a;
     if (a < b)
         return pairGCD(b, a);
     while (true) {
