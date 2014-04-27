@@ -499,9 +499,19 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
         
         __weak JTSImageViewController *weakSelf = self;
         
-        // Have to dispatch to the next runloop,
+        // Have to dispatch ahead two runloops,
         // or else the image view changes above won't be
         // committed prior to the animations below.
+        //
+        // Dispatching only one runloop ahead doesn't fix
+        // the issue on certain devices.
+        //
+        // This issue also seems to be triggered by only
+        // certain kinds of interactions with certain views,
+        // especially when a UIButton is the reference
+        // for the JTSImageInfo.
+        //
+        dispatch_async(dispatch_get_main_queue(), ^{
         dispatch_async(dispatch_get_main_queue(), ^{
         
             [UIView
@@ -566,6 +576,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
                      [weakSelf.view setUserInteractionEnabled:YES];
                  }
              }];
+        });
         });
     }];
 }
