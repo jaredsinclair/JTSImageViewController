@@ -20,7 +20,7 @@ CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius = 2.0f;
 CGFloat const JTSImageViewController_MinimumBackgroundScaling = 0.94f;
 CGFloat const JTSImageViewController_TargetZoomForDoubleTap = 3.0f;
 CGFloat const JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition = 1.25f;
-CGFloat const JTSImageViewController_TransitionAnimationDuration = 0.28f;
+CGFloat const JTSImageViewController_TransitionAnimationDuration = 0.3f;
 CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 @interface JTSImageViewController ()
@@ -990,6 +990,10 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
     
+    // We'll draw the presentingViewController's view into a context
+    // that is scaled down by a factor of 4, which will dramatically improve
+    // the performance of JTS_applyBlurWithRadius:tintColor:saturationDeltaFactor:maskImage:
+    
     CGFloat outerBleed = 20.0f;
     CGFloat performanceDownScalingFactor = 0.25f;
     CGFloat scaledOuterBleed = outerBleed * performanceDownScalingFactor;
@@ -997,7 +1001,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     CGRect scaledBounds = contextBounds;
     scaledBounds.size.width *= performanceDownScalingFactor;
     scaledBounds.size.height *= performanceDownScalingFactor;
-    CGRect scaledDrawingArea = presentingViewController.view.frame;
+    CGRect scaledDrawingArea = presentingViewController.view.bounds;
     scaledDrawingArea.size.width *= performanceDownScalingFactor;
     scaledDrawingArea.size.height *= performanceDownScalingFactor;
     
