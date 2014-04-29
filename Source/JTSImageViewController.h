@@ -90,6 +90,29 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
                   backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle;
 
 /**
+ Initializer for using JTSImageViewController with a custom image downloader for the purpose of easily allowing cooperation with image caching 3rd party libraries like SDWebImage.
+ 
+ @param imageInfo The source info for image and transition metadata. Required.
+ 
+ @param mode The mode to be used. (JTSImageViewController has an alternate alt text mode). Required.
+ 
+ @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred. The latter is like Tweetbot 3.0's background style.
+ 
+ @param customImageProgress Progress object to be updated by the caller with completed and totalUnitCount to inform of download progress.
+ */
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle
+              customImageProgress:(NSProgress*)customImageProgress;
+
+/**
+ Image setter intended for use only when using custom image downloader to provide the UIImage to be used upon download/retrieval completion.
+ 
+ @param customImage Full image to be displayed
+ */
+-(void)customImageSetter:(UIImage*)customImage;
+
+/**
  JTSImageViewController is presented from viewController as a UIKit modal view controller.
  
  It's first presented as a full-screen modal *without* animation. At this stage the view controller
