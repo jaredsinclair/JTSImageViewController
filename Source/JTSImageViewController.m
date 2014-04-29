@@ -53,6 +53,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 @property (assign, nonatomic) BOOL isManuallyResizingTheScrollViewFrame;
 @property (assign, nonatomic) BOOL imageDownloadFailed;
 @property (assign, nonatomic) BOOL statusBarHiddenPriorToPresentation;
+@property (assign, nonatomic) BOOL imageDownloadUsingCustom;
 
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnail;
 @property (assign, nonatomic) CGRect startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
@@ -86,6 +87,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 @property (strong, nonatomic) NSURLSessionDataTask *imageDownloadDataTask;
 @property (strong, nonatomic) NSTimer *downloadProgressTimer;
+@property (strong, nonatomic) NSProgress * customImageProgress;
 
 @end
 
@@ -115,6 +117,56 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
         }
     }
     return self;
+}
+
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle
+              customImageProgress:(NSProgress*)customImageProgress{
+    
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _backgroundBlurRadius = JTSImageViewController_DefaultBackgroundBlurRadius;
+        _alphaForBackgroundDimmingOverlay = JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
+        _imageInfo = imageInfo;
+        _currentSnapshotRotationTransform = CGAffineTransformIdentity;
+        _mode = mode;
+        _backgroundStyle = backgroundStyle;
+        _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
+        _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
+        _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
+        if (_mode == JTSImageViewControllerMode_Image) {
+            _imageDownloadUsingCustom = YES;
+            //set placeholder
+            [self setImage:imageInfo.placeholderImage];
+            //caller is responsible for setting the image view via block
+            //progress timer will call progress completion block
+            _customImageProgress = customImageProgress;
+            [self startProgressTimer];
+        }
+    }
+    return self;
+}
+
+-(void)customImageSetter:(UIImage*)customImage{
+    
+    NSParameterAssert(customImage);
+    
+    [self cancelProgressTimer];
+    if (customImage) {
+        if (self.isViewLoaded) {
+            [self updateInterfaceWithImage:customImage];
+        } else {
+            [self setImage:customImage];
+        }
+    } else if (self.image == nil) {
+        [self setImageDownloadFailed:YES];
+        if (self.isPresented && self.isAnimatingAPresentationOrDismissal == NO) {
+            [self dismiss:YES];
+        }
+        // If we're still presenting, at the end of presentation,
+        // we'll auto dismiss.
+    }
 }
 
 - (void)showFromViewController:(UIViewController *)viewController
@@ -1552,14 +1604,27 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 }
 
 - (void)progressTimerFired:(NSTimer *)timer {
+    
     CGFloat progress = 0;
-    CGFloat bytesExpected = self.imageDownloadDataTask.countOfBytesExpectedToReceive;
-    if (bytesExpected > 0 && _imageIsBeingReadFromDisk == NO) {
-        [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveLinear animations:^{
-            self.spinner.alpha = 0;
-            self.progressView.alpha = 1;
-        } completion:nil];
-        progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
+    if(self.imageDownloadUsingCustom){
+        if(self.customImageProgress){
+            //use progress object to determine completion
+            progress = _customImageProgress.fractionCompleted;
+            if(_customImageProgress.totalUnitCount){
+                self.spinner.alpha = 0;
+                self.progressView.alpha = 1;
+            }
+        }
+    } else {
+        //JTSSimpleImageDownloader
+        CGFloat bytesExpected = self.imageDownloadDataTask.countOfBytesExpectedToReceive;
+        if (bytesExpected > 0 && _imageIsBeingReadFromDisk == NO) {
+            [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveLinear animations:^{
+                self.spinner.alpha = 0;
+                self.progressView.alpha = 1;
+            } completion:nil];
+            progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
+        }
     }
     [self.progressView setProgress:progress];
 }
