@@ -150,22 +150,8 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 -(void)customImageSetter:(UIImage*)customImage{
     
-    NSParameterAssert(customImage);
-    
-    [self cancelProgressTimer];
-    if (customImage) {
-        if (self.isViewLoaded) {
-            [self updateInterfaceWithImage:customImage];
-        } else {
-            [self setImage:customImage];
-        }
-    } else if (self.image == nil) {
-        [self setImageDownloadFailed:YES];
-        if (self.isPresented && self.isAnimatingAPresentationOrDismissal == NO) {
-            [self dismiss:YES];
-        }
-        // If we're still presenting, at the end of presentation,
-        // we'll auto dismiss.
+    if(customImage && self.imageDownloadUsingCustom){
+        [self downloadCompletion:customImage];
     }
 }
 
@@ -325,26 +311,30 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
         
         __weak JTSImageViewController *weakSelf = self;
         NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
-            [weakSelf cancelProgressTimer];
-            if (image) {
-                if (weakSelf.isViewLoaded) {
-                    [weakSelf updateInterfaceWithImage:image];
-                } else {
-                    [weakSelf setImage:image];
-                }
-            } else if (weakSelf.image == nil) {
-                [weakSelf setImageDownloadFailed:YES];
-                if (weakSelf.isPresented && weakSelf.isAnimatingAPresentationOrDismissal == NO) {
-                    [weakSelf dismiss:YES];
-                }
-                // If we're still presenting, at the end of presentation,
-                // we'll auto dismiss.
-            }
+            [weakSelf downloadCompletion:image];
         }];
         
         [self setImageDownloadDataTask:task];
         
         [self startProgressTimer];
+    }
+}
+
+-(void)downloadCompletion:(UIImage*)image{
+    [self cancelProgressTimer];
+    if (image) {
+        if (self.isViewLoaded) {
+            [self updateInterfaceWithImage:image];
+        } else {
+            [self setImage:image];
+        }
+    } else if (self.image == nil) {
+        [self setImageDownloadFailed:YES];
+        if (self.isPresented && self.isAnimatingAPresentationOrDismissal == NO) {
+            [self dismiss:YES];
+        }
+        // If we're still presenting, at the end of presentation,
+        // we'll auto dismiss.
     }
 }
 
