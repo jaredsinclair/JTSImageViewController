@@ -90,7 +90,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
                   backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle;
 
 /**
- Initializer for using JTSImageViewController with a custom image downloader for the purpose of easily allowing cooperation with image caching 3rd party libraries like SDWebImage.
+ Initializer for using JTSImageViewController with a custom image downloader for the purpose of easily allowing cooperation with 3rd party libraries for downloading or caching images such as SDWebImage. Caller is responsible for setting the image view via customImageLoadingDidFinish: when image download is finished.
  
  @param imageInfo The source info for image and transition metadata. Required.
  
@@ -103,14 +103,14 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle
-              customImageProgress:(NSProgress*)customImageProgress;
+              customImageLoadingProgress:(NSProgress*)customImageProgress;
 
 /**
  Image setter intended for use only when using custom image downloader to provide the UIImage to be used upon download/retrieval completion.
  
- @param customImage Full image to be displayed
+ @param image Image to be displayed
  */
--(void)customImageSetter:(UIImage*)customImage;
+-(void)customImageLoadingDidFinish:(UIImage*)image;
 
 /**
  JTSImageViewController is presented from viewController as a UIKit modal view controller.

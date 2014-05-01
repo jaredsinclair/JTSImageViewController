@@ -100,18 +100,11 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle {
-    
-    self = [super initWithNibName:nil bundle:nil];
-    if (self) {
-        _backgroundBlurRadius = JTSImageViewController_DefaultBackgroundBlurRadius;
-        _alphaForBackgroundDimmingOverlay = JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
+
+    if (self = [self init]) {
         _imageInfo = imageInfo;
-        _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundStyle = backgroundStyle;
-        _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
-        _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
-        _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
         if (_mode == JTSImageViewControllerMode_Image) {
             [self setupImageAndDownloadIfNecessary:imageInfo];
         }
@@ -122,25 +115,17 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundStyle)backgroundStyle
-              customImageProgress:(NSProgress*)customImageProgress{
+              customImageLoadingProgress:(NSProgress*)customImageProgress{
     
-    self = [super initWithNibName:nil bundle:nil];
-    if (self) {
-        _backgroundBlurRadius = JTSImageViewController_DefaultBackgroundBlurRadius;
-        _alphaForBackgroundDimmingOverlay = JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
+    if (self = [self init]) {
         _imageInfo = imageInfo;
-        _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundStyle = backgroundStyle;
-        _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
-        _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
-        _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
         if (_mode == JTSImageViewControllerMode_Image) {
             _imageDownloadUsingCustom = YES;
             //set placeholder
             [self setImage:imageInfo.placeholderImage];
-            //caller is responsible for setting the image view via block
-            //progress timer will call progress completion block
+            //retain NSProgress to be used in place of imageDownloadDataTask
             _customImageProgress = customImageProgress;
             [self startProgressTimer];
         }
@@ -148,10 +133,10 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     return self;
 }
 
--(void)customImageSetter:(UIImage*)customImage{
+-(void)customImageLoadingDidFinish:(UIImage*)image{
     
-    if(customImage && self.imageDownloadUsingCustom){
-        [self downloadCompletion:customImage];
+    if(image && self.imageDownloadUsingCustom){
+        [self downloadCompletion:image];
     }
 }
 
@@ -297,6 +282,20 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 }
 
 #pragma mark - Setup
+
+- (instancetype)init{
+    
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        _backgroundBlurRadius = JTSImageViewController_DefaultBackgroundBlurRadius;
+        _alphaForBackgroundDimmingOverlay = JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
+        _currentSnapshotRotationTransform = CGAffineTransformIdentity;
+        _accessibilityLabel = [self defaultAccessibilityLabelForScrollView];
+        _accessibilityHintZoomedIn = [self defaultAccessibilityHintForScrollView:YES];
+        _accessibilityHintZoomedOut = [self defaultAccessibilityHintForScrollView:NO];
+    }
+    return self;
+}
 
 - (void)setupImageAndDownloadIfNecessary:(JTSImageInfo *)imageInfo {
     if (imageInfo.image) {

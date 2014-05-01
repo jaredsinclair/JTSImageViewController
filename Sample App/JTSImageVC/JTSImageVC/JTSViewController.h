@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface JTSViewController : UIViewController
+@interface JTSViewController : UIViewController <NSURLSessionDelegate,NSURLSessionDownloadDelegate>
 
 @property (weak, nonatomic) IBOutlet UIButton *bigImageButton;
 @property (weak, nonatomic) IBOutlet UIButton *simpleImageButton;

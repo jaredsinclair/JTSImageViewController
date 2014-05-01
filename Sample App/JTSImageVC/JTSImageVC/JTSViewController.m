@@ -10,12 +10,15 @@
 
 #import "JTSImageViewController.h"
 #import "JTSImageInfo.h"
-
-#import "SDWebImageManager.h"
+#import "JTSAnimatedGIFUtility.h"
 
 @interface JTSViewController ()
 
+@property NSProgress *customProgress;
+@property JTSImageViewController * imageViewerForCustomLoading;
+
 @end
+
 
 @implementation JTSViewController
 
@@ -75,37 +78,46 @@
     imageInfo.referenceRect = self.customBigImageButton.frame;
     imageInfo.referenceView = self.customBigImageButton.superview;
     
-    SDWebImageManager * manage= [SDWebImageManager sharedManager];
-    //clear memory to test progress
-    SDImageCache *imageCache = [SDImageCache sharedImageCache];
-    [imageCache clearMemory];
-    [imageCache clearDisk];
-    [imageCache cleanDisk];
-    
-    __block NSProgress * progress = [[NSProgress alloc] initWithParent:nil userInfo:nil];
-    
-    SDWebImageDownloaderProgressBlock sdBlock = ^(NSInteger receivedSize, NSInteger expectedSize) {
-        
-        [progress setCompletedUnitCount:receivedSize];
-        [progress setTotalUnitCount:expectedSize];
-    };
+    NSProgress * customProgress = [NSProgress progressWithTotalUnitCount:0];
+    customProgress.kind = NSProgressKindFile;
+    self.customProgress = customProgress;
     
     //with custom progress
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
                                            backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred
-                                           customImageProgress:progress];
+                                           customImageLoadingProgress:self.customProgress];
+    NSURLSessionConfiguration * sessionConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
+    [sessionConfig setRequestCachePolicy:NSURLRequestReloadIgnoringCacheData];//no cache to allow repeatable testing
+    NSURLSession * session = [NSURLSession sessionWithConfiguration:sessionConfig delegate:self delegateQueue:[NSOperationQueue mainQueue]];    //main thread response for delegates
+    NSURLSessionDownloadTask * task = [session downloadTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://i.imgur.com/iGRxQNb.gif"]]];
     
-    //hopefully url does not disappear
-    [manage downloadWithURL:[NSURL URLWithString:@"http://i.imgur.com/iGRxQNb.gif"] options:0 progress:sdBlock completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished) {
-        
-        [imageViewer customImageSetter:image];
-    }];
+    self.imageViewerForCustomLoading = imageViewer;
     
+    [task resume];
     // Present the view controller.
     [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
     
+}
+#pragma mark - url session download delegate
+-(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didResumeAtOffset:(int64_t)fileOffset expectedTotalBytes:(int64_t)expectedTotalBytes{
+    
+    _customProgress.totalUnitCount = expectedTotalBytes;
+    _customProgress.completedUnitCount = 0;
+
+}
+
+-(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite{
+    
+    _customProgress.totalUnitCount = totalBytesExpectedToWrite;
+    _customProgress.completedUnitCount = totalBytesWritten;
+}
+
+-(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location{
+    
+    UIImage * image = [JTSAnimatedGIFUtility animatedImageWithAnimatedGIFURL:location];
+    [self.imageViewerForCustomLoading customImageLoadingDidFinish:image];
 }
 
 @end
