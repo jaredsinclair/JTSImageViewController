@@ -368,7 +368,9 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     [self.blackBackdrop setAlpha:0];
     [self.view addSubview:self.blackBackdrop];
     
-    self.textView = [[UITextView alloc] initWithFrame:CGRectInset(self.view.bounds, 14.0f, 0)];
+    CGFloat outerMargin = ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) ? 80.0 : 40.0;
+    
+    self.textView = [[UITextView alloc] initWithFrame:CGRectInset(self.view.bounds, outerMargin, 0)];
     self.textView.delegate = self;
     self.textView.textColor = [UIColor whiteColor];
     self.textView.backgroundColor = [UIColor clearColor];
