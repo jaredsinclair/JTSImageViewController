@@ -321,6 +321,10 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
     
+    if ([self.optionsDelegate respondsToSelector:@selector(backgroundColorImageViewInImageViewer:)]) {
+        self.imageView.backgroundColor = [self.optionsDelegate backgroundColorImageViewInImageViewer:self];
+    }
+    
     // We'll add the image view to either the scroll view
     // or the parent view, based on the transition style
     // used in the "show" method.
