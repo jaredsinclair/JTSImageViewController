@@ -1455,7 +1455,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     self.attachmentBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.imageView offsetFromCenter:offset attachedToAnchor:anchor];
     [self.animator addBehavior:self.attachmentBehavior];
     UIDynamicItemBehavior *modifier = [[UIDynamicItemBehavior alloc] initWithItems:@[self.imageView]];
-    [modifier setAngularResistance:15];
+    [modifier setAngularResistance:[self appropriateAngularResistanceForView:self.imageView]];
     [modifier setDensity:[self appropriateDensityForView:self.imageView]];
     [self.animator addBehavior:modifier];
 }
@@ -1503,6 +1503,19 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }];
     [self.animator removeBehavior:self.attachmentBehavior];
     [self.animator addBehavior:push];
+}
+
+- (CGFloat)appropriateAngularResistanceForView:(UIView *)view {
+    CGFloat height = view.bounds.size.height;
+    CGFloat width = view.bounds.size.width;
+    CGFloat actualArea = height * width;
+    CGFloat referenceArea = self.view.bounds.size.width * self.view.bounds.size.height;
+    CGFloat factor = referenceArea / actualArea;
+    CGFloat defaultResistance = 4.0f; // Feels good with a 1x1 on 3.5 inch displays. We'll adjust this to match the current display.
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    CGFloat resistance = defaultResistance * ((320.0 * 480.0) / (screenWidth * screenHeight));
+    return resistance * factor;
 }
 
 - (CGFloat)appropriateDensityForView:(UIView *)view {
