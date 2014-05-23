@@ -126,12 +126,12 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     
     if (self.mode == JTSImageViewControllerMode_Image) {
         if (transition == JTSImageViewControllerTransition_FromOffscreen) {
-            [self _showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
+            [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
         } else {
-            [self _showImageViewerByExpandingFromOriginalPositionFromViewController:viewController];
+            [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController];
         }
     } else if (self.mode == JTSImageViewControllerMode_AltText) {
-        [self _showAltTextFromViewController:viewController];
+        [self showAltTextFromViewController:viewController];
     }
 }
 
@@ -144,15 +144,15 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     [self setIsPresented:NO];
     
     if (self.mode == JTSImageViewControllerMode_AltText) {
-        [self _dismissByExpandingAltTextToOffscreenPosition];
+        [self dismissByExpandingAltTextToOffscreenPosition];
     }
     else if (self.mode == JTSImageViewControllerMode_Image) {
         
         if (self.imageIsFlickingAwayForDismissal) {
-            [self _dismissByCleaningUpAfterImageWasFlickedOffscreen];
+            [self dismissByCleaningUpAfterImageWasFlickedOffscreen];
         }
         else if (self.transition == JTSImageViewControllerTransition_FromOffscreen) {
-            [self _dismissByExpandingImageToOffscreenPosition];
+            [self dismissByExpandingImageToOffscreenPosition];
         }
         else {
             BOOL startingRectForThumbnailIsNonZero = (CGRectEqualToRect(CGRectZero, self.startingReferenceFrameForThumbnail) == NO);
@@ -160,9 +160,9 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
                                                 && self.image != nil
                                                 && self.transition != JTSImageViewControllerTransition_FromOffscreen);
             if (useCollapsingThumbnailStyle) {
-                [self _dismissByCollapsingImageBackToOriginalPosition];
+                [self dismissByCollapsingImageBackToOriginalPosition];
             } else {
-                [self _dismissByExpandingImageToOffscreenPosition];
+                [self dismissByExpandingImageToOffscreenPosition];
             }
         }
     }
@@ -217,10 +217,10 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (self.mode == JTSImageViewControllerMode_Image) {
-        [self _viewDidLoadForImageMode];
+        [self viewDidLoadForImageMode];
     }
     else if (self.mode == JTSImageViewControllerMode_AltText) {
-        [self _viewDidLoadForAltTextMode];
+        [self viewDidLoadForAltTextMode];
     }
 }
 
@@ -296,7 +296,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }
 }
 
-- (void)_viewDidLoadForImageMode {
+- (void)viewDidLoadForImageMode {
     
     [self.view setBackgroundColor:[UIColor blackColor]];
     [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
@@ -354,7 +354,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }
 }
 
-- (void)_viewDidLoadForAltTextMode {
+- (void)viewDidLoadForAltTextMode {
     
     [self.view setBackgroundColor:[UIColor blackColor]];
     [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth];
@@ -442,7 +442,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 #pragma mark - Presentation
 
-- (void)_showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController {
+- (void)showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController {
     
     [self setIsAnimatingAPresentationOrDismissal:YES];
     [self.view setUserInteractionEnabled:NO];
@@ -583,7 +583,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }];
 }
 
-- (void)_showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController {
+- (void)showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController {
     
     [self setIsAnimatingAPresentationOrDismissal:YES];
     [self.view setUserInteractionEnabled:NO];
@@ -672,7 +672,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }];
 }
 
-- (void)_showAltTextFromViewController:(UIViewController *)viewController {
+- (void)showAltTextFromViewController:(UIViewController *)viewController {
     
     [self setIsAnimatingAPresentationOrDismissal:YES];
     [self.view setUserInteractionEnabled:NO];
@@ -764,7 +764,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 #pragma mark - Dismissal
 
-- (void)_dismissByCollapsingImageBackToOriginalPosition {
+- (void)dismissByCollapsingImageBackToOriginalPosition {
     
     [self.view setUserInteractionEnabled:NO];
     [self setIsAnimatingAPresentationOrDismissal:YES];
@@ -860,7 +860,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     });
 }
 
-- (void)_dismissByCleaningUpAfterImageWasFlickedOffscreen {
+- (void)dismissByCleaningUpAfterImageWasFlickedOffscreen {
     
     [self.view setUserInteractionEnabled:NO];
     [self setIsAnimatingAPresentationOrDismissal:YES];
@@ -895,7 +895,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }];
 }
 
-- (void)_dismissByExpandingImageToOffscreenPosition {
+- (void)dismissByExpandingImageToOffscreenPosition {
     
     [self.view setUserInteractionEnabled:NO];
     [self setIsAnimatingAPresentationOrDismissal:YES];
@@ -931,7 +931,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     }];
 }
 
-- (void)_dismissByExpandingAltTextToOffscreenPosition {
+- (void)dismissByExpandingAltTextToOffscreenPosition {
     
     [self.view setUserInteractionEnabled:NO];
     [self setIsAnimatingAPresentationOrDismissal:YES];
