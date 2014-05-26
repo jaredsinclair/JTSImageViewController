@@ -8,9 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol JTSDownloaderTask;
+
 @interface JTSSimpleImageDownloader : NSObject
 
-+ (NSURLSessionDataTask *)downloadImageForURL:(NSURL *)imageURL
++ (id <JTSDownloaderTask>)downloadImageForURL:(NSURL *)imageURL
                                  canonicalURL:(NSURL *)canonicalURL
                                    completion:(void(^)(UIImage *image))completion;
 

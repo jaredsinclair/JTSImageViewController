@@ -41,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		36AAAB64193360DC0005473C /* JTSDownloaderTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JTSDownloaderTask.h; path = ../../../Source/JTSDownloaderTask.h; sourceTree = "<group>"; };
 		7F9A78FB18E754A7000CAA69 /* JTSImageVC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JTSImageVC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F9A78FE18E754A7000CAA69 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7F9A790018E754A7000CAA69 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -183,6 +184,7 @@
 				7F9A793518E75541000CAA69 /* JTSImageViewController.m */,
 				7F9A793718E75558000CAA69 /* JTSImageInfo.h */,
 				7F9A793818E75558000CAA69 /* JTSImageInfo.m */,
+				36AAAB64193360DC0005473C /* JTSDownloaderTask.h */,
 				7F9A793A18E75593000CAA69 /* JTSSimpleImageDownloader.h */,
 				7F9A793B18E75593000CAA69 /* JTSSimpleImageDownloader.m */,
 				7F9A793D18E755F6000CAA69 /* JTSAnimatedGIFUtility.h */,
@@ -431,7 +433,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JTSImageVC/JTSImageVC-Prefix.pch";
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -445,7 +447,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JTSImageVC/JTSImageVC-Prefix.pch";
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
