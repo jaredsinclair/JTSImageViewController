@@ -11,6 +11,7 @@
 #import "JTSSimpleImageDownloader.h"
 #import "UIImage+JTSImageEffects.h"
 #import "UIApplication+JTSImageViewController.h"
+#import "JTSDownloaderTask.h"
 
 // Public Constants
 CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0.66f;
@@ -84,7 +85,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 @property (strong, nonatomic) UIDynamicAnimator *animator;
 @property (strong, nonatomic) UIAttachmentBehavior *attachmentBehavior;
 
-@property (strong, nonatomic) NSURLSessionDataTask *imageDownloadDataTask;
+@property (strong, nonatomic) id<JTSDownloaderTask> imageDownloadDataTask;
 @property (strong, nonatomic) NSTimer *downloadProgressTimer;
 
 @end
@@ -272,7 +273,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
         [self setImageIsBeingReadFromDisk:fromDisk];
         
         __weak JTSImageViewController *weakSelf = self;
-        NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
+        id <JTSDownloaderTask> task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
             [weakSelf cancelProgressTimer];
             if (image) {
                 if (weakSelf.isViewLoaded) {
@@ -289,7 +290,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
                 // we'll auto dismiss.
             }
         }];
-        
+
         [self setImageDownloadDataTask:task];
         
         [self startProgressTimer];

@@ -41,6 +41,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		420CEAB3E7B42C22D3CBA062 /* JTSDownloaderTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JTSDownloaderTask.h; sourceTree = "<group>"; };
 		7F9A78FB18E754A7000CAA69 /* JTSImageVC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JTSImageVC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F9A78FE18E754A7000CAA69 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7F9A790018E754A7000CAA69 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -191,6 +192,7 @@
 				7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */,
 				7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */,
 				7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */,
+				420CEAB3E7B42C22D3CBA062 /* JTSDownloaderTask.h */,
 			);
 			name = Source;
 			path = JTSImageVC;
