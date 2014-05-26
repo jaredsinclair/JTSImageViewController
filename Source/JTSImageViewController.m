@@ -334,7 +334,9 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     [self.view addSubview:self.progressContainer];
     self.progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
     self.progressView.progress = 0;
-    self.progressView.tintColor = [UIColor whiteColor];
+    if ([UIDevice currentDevice].systemVersion.intValue >= 7) {
+        self.progressView.tintColor = [UIColor whiteColor];
+    }
     self.progressView.trackTintColor = [UIColor darkGrayColor];
     CGRect progressFrame = self.progressView.frame;
     progressFrame.size.width = 128.0f;
@@ -525,7 +527,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
                  
                  [weakSelf setIsTransitioningFromInitialModalToInteractiveState:YES];
                  
-                 if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                 if ([UIDevice currentDevice].systemVersion.intValue >= 7 && [UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
                      [weakSelf setNeedsStatusBarAppearanceUpdate];
                  } else {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
@@ -838,7 +840,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
                 }
                 
                 // Rotation not needed, so fade the status bar back in. Looks nicer.
-                if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+                if ([UIDevice currentDevice].systemVersion.intValue >= 7 && [UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
                     [weakSelf setNeedsStatusBarAppearanceUpdate];
                 } else {
                     [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
@@ -882,7 +884,7 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
             [weakSelf.blurredSnapshotView setAlpha:0];
         }
         [weakSelf.scrollView setAlpha:0];
-        if ([UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
+        if ([UIDevice currentDevice].systemVersion.intValue >= 7 && [UIApplication sharedApplication].jts_usesViewControllerBasedStatusBarAppearance) {
             [weakSelf setNeedsStatusBarAppearanceUpdate];
         } else {
             [[UIApplication sharedApplication] setStatusBarHidden:weakSelf.statusBarHiddenPriorToPresentation
@@ -983,7 +985,10 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
-    UIView *snapshot = [presentingViewController.view snapshotViewAfterScreenUpdates:YES];
+    UIView *snapshot;
+    if ([UIDevice currentDevice].systemVersion.intValue >= 7) {
+        snapshot = [presentingViewController.view snapshotViewAfterScreenUpdates:YES];
+    }
     [snapshot setClipsToBounds:NO];
     return snapshot;
 }
@@ -1011,7 +1016,9 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
     UIGraphicsBeginImageContextWithOptions(scaledBounds.size, YES, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextConcatCTM(context, CGAffineTransformMakeTranslation(scaledOuterBleed, scaledOuterBleed));
-    [presentingViewController.view drawViewHierarchyInRect:scaledDrawingArea afterScreenUpdates:YES];
+    if ([UIDevice currentDevice].systemVersion.intValue >= 7) {
+        [presentingViewController.view drawViewHierarchyInRect:scaledDrawingArea afterScreenUpdates:YES];
+    }
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
@@ -1029,24 +1036,30 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 #pragma mark - Motion Effects
 
 - (void)addMotionEffectsToSnapshotView {
-    UIInterpolatingMotionEffect *verticalEffect;
-    verticalEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
-    verticalEffect.minimumRelativeValue = @(12);
-    verticalEffect.maximumRelativeValue = @(-12);
-    
-    UIInterpolatingMotionEffect *horizontalEffect;
-    horizontalEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
-    horizontalEffect.minimumRelativeValue = @(12);
-    horizontalEffect.maximumRelativeValue = @(-12);
-    
-    UIMotionEffectGroup *effectGroup = [[UIMotionEffectGroup alloc] init];
-    [effectGroup setMotionEffects:@[horizontalEffect, verticalEffect]];
-    [self.snapshotView addMotionEffect:effectGroup];
+    if ([UIDevice currentDevice].systemVersion.intValue >= 7) {
+
+        UIInterpolatingMotionEffect *verticalEffect;
+        verticalEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+        verticalEffect.minimumRelativeValue = @(12);
+        verticalEffect.maximumRelativeValue = @(-12);
+
+        UIInterpolatingMotionEffect *horizontalEffect;
+        horizontalEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+        horizontalEffect.minimumRelativeValue = @(12);
+        horizontalEffect.maximumRelativeValue = @(-12);
+
+        UIMotionEffectGroup *effectGroup = [[UIMotionEffectGroup alloc] init];
+        [effectGroup setMotionEffects:@[horizontalEffect, verticalEffect]];
+        [self.snapshotView addMotionEffect:effectGroup];
+    }
 }
 
 - (void)removeMotionEffectsFromSnapshotView {
-    for (UIMotionEffect *effect in self.snapshotView.motionEffects) {
-        [self.snapshotView removeMotionEffect:effect];
+    if([UIDevice currentDevice].systemVersion.intValue >= 7) {
+
+        for (UIMotionEffect *effect in self.snapshotView.motionEffects) {
+            [self.snapshotView removeMotionEffect:effect];
+        }
     }
 }
 
@@ -1469,22 +1482,26 @@ CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
         self.imageView.transform = CGAffineTransformIdentity;
         self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
     } else {
-        [UIView
-         animateWithDuration:0.7
-         delay:0
-         usingSpringWithDamping:0.7
-         initialSpringVelocity:0
-         options:UIViewAnimationOptionAllowUserInteraction |
-         UIViewAnimationOptionBeginFromCurrentState
-         animations:^{
-             if (self.isDraggingImage == NO) {
-                 self.imageView.transform = CGAffineTransformIdentity;
-                 if (self.scrollView.dragging == NO && self.scrollView.decelerating == NO) {
-                     self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
-                     [self updateScrollViewAndImageViewForCurrentMetrics];
-                 }
-             }
-         } completion:nil];
+        if ([UIDevice currentDevice].systemVersion.intValue >= 7 ) {
+            [UIView
+                    animateWithDuration:0.7
+                                  delay:0
+                 usingSpringWithDamping:0.7
+                  initialSpringVelocity:0
+                                options:UIViewAnimationOptionAllowUserInteraction |
+                                        UIViewAnimationOptionBeginFromCurrentState
+                             animations:^{
+                if (self.isDraggingImage == NO) {
+                    self.imageView.transform = CGAffineTransformIdentity;
+                    if (self.scrollView.dragging == NO && self.scrollView.decelerating == NO) {
+                        self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+                        [self updateScrollViewAndImageViewForCurrentMetrics];
+                    }
+                }
+            } completion:nil];
+        } else {
+            //todo
+        }
     }
 }
 
