@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   
   s.compiler_flags = "-fmodules"
   
-  s.ios.deployment_target = '7.0'
+  s.ios.deployment_target = '6.0'
   
   s.source_files = ['Source/*.{h,m}']
 
