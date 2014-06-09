@@ -330,6 +330,7 @@ typedef struct {
     self.imageView.contentMode = UIViewContentModeScaleAspectFill;
     self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
+    self.imageView.layer.allowsEdgeAntialiasing = YES;
     
     // We'll add the image view to either the scroll view
     // or the parent view, based on the transition style
