@@ -467,6 +467,8 @@ typedef struct {
     
     [self.view insertSubview:self.snapshotView atIndex:0];
     
+
+    
     _startingInfo.startingInterfaceOrientation = viewController.interfaceOrientation;
     
     [self setLastUsedOrientation:viewController.interfaceOrientation];
@@ -547,14 +549,16 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
-                 
-                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
-                     [weakSelf.blurredSnapshotView setAlpha:1];
+                 if (self.backgroundStyle < JTSImageViewControllerBackgroundStyle_Dimmed) {
+                     CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                     weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
+                     
+                     if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                         [weakSelf.blurredSnapshotView setAlpha:1];
+                     }
+                     
+                     [weakSelf addMotionEffectsToSnapshotView];
                  }
-                 
-                 [weakSelf addMotionEffectsToSnapshotView];
                  [weakSelf.blackBackdrop setAlpha:self.alphaForBackgroundDimmingOverlay];
                  
                  if (mustRotateDuringTransition) {
@@ -614,6 +618,9 @@ typedef struct {
     }
     
     [self.view insertSubview:self.snapshotView atIndex:0];
+
+    
+    
     _startingInfo.startingInterfaceOrientation = viewController.interfaceOrientation;
     [self setLastUsedOrientation:viewController.interfaceOrientation];
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
@@ -659,14 +666,18 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
-                 
-                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
-                     [weakSelf.blurredSnapshotView setAlpha:1];
+                 if (self.backgroundStyle < JTSImageViewControllerBackgroundStyle_Dimmed) {
+                     CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                     weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
+                     
+                     if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
+                         [weakSelf.blurredSnapshotView setAlpha:1];
+                     }
+                     
+                     [weakSelf addMotionEffectsToSnapshotView];
                  }
                  
-                 [weakSelf addMotionEffectsToSnapshotView];
+
                  [weakSelf.blackBackdrop setAlpha:self.alphaForBackgroundDimmingOverlay];
                  
                  [weakSelf.scrollView setAlpha:1.0f];
