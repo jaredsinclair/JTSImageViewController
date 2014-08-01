@@ -474,6 +474,10 @@ typedef struct {
     
     _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
+    if (self.imageInfo.contentMode) {
+        self.imageView.contentMode = self.imageInfo.contentMode;
+    }
+    
     // This will be moved into the scroll view after
     // the transition finishes.
     [self.view addSubview:self.imageView];
