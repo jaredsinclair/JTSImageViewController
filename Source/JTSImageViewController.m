@@ -487,6 +487,7 @@ typedef struct {
         CGRect referenceFrameInMyView = [self.view convertRect:referenceFrameInWindow fromView:nil];
         _startingInfo.startingReferenceFrameForThumbnail = referenceFrameInMyView;
         [self.imageView setFrame:referenceFrameInMyView];
+        self.imageView.layer.cornerRadius = self.imageInfo.referenceCornerRadius;
         [self updateScrollViewAndImageViewForCurrentMetrics];
         
         BOOL mustRotateDuringTransition = (self.interfaceOrientation != _startingInfo.startingInterfaceOrientation);
@@ -533,6 +534,14 @@ typedef struct {
         dispatch_async(dispatch_get_main_queue(), ^{
         dispatch_async(dispatch_get_main_queue(), ^{
         
+            CABasicAnimation *cornerRadiusAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
+            cornerRadiusAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+            cornerRadiusAnimation.fromValue = @(weakSelf.imageView.layer.cornerRadius);
+            cornerRadiusAnimation.toValue = @(0.0);
+            cornerRadiusAnimation.duration = duration;
+            [weakSelf.imageView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
+            weakSelf.imageView.layer.cornerRadius = 0.0;
+            
             [UIView
              animateWithDuration:duration
              delay:0
@@ -859,6 +868,14 @@ typedef struct {
         if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
             duration *= 4;
         }
+        
+        CABasicAnimation *cornerRadiusAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
+        cornerRadiusAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        cornerRadiusAnimation.fromValue = @(0.0);
+        cornerRadiusAnimation.toValue = @(weakSelf.imageInfo.referenceCornerRadius);
+        cornerRadiusAnimation.duration = duration;
+        [weakSelf.imageView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
+        weakSelf.imageView.layer.cornerRadius = weakSelf.imageInfo.referenceCornerRadius;
         
         [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
             
