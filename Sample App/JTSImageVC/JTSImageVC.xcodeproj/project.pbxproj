@@ -72,7 +72,6 @@
 		7F9A794018E75712000CAA69 /* UIImage+JTSImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+JTSImageEffects.h"; path = "../../../Source/UIImage+JTSImageEffects.h"; sourceTree = "<group>"; };
 		7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+JTSImageEffects.m"; path = "../../../Source/UIImage+JTSImageEffects.m"; sourceTree = "<group>"; };
 		7FA8566619B2762F00913254 /* banecat-red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "banecat-red.png"; sourceTree = "<group>"; };
-		7FA8566819B2871F00913254 /* '-[p[:8i.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "'-[p[:8i.h"; sourceTree = "<group>"; };
 		7FE0848118E7C5C600F2F6B4 /* banecat.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banecat.jpg; sourceTree = "<group>"; };
 		7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIApplication+JTSImageViewController.h"; path = "../../../Source/UIApplication+JTSImageViewController.h"; sourceTree = "<group>"; };
 		7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIApplication+JTSImageViewController.m"; path = "../../../Source/UIApplication+JTSImageViewController.m"; sourceTree = "<group>"; };
@@ -185,7 +184,6 @@
 			children = (
 				7F9A793418E75541000CAA69 /* JTSImageViewController.h */,
 				7F9A793518E75541000CAA69 /* JTSImageViewController.m */,
-				7FA8566819B2871F00913254 /* '-[p[:8i.h */,
 				7F9A793718E75558000CAA69 /* JTSImageInfo.h */,
 				7F9A793818E75558000CAA69 /* JTSImageInfo.m */,
 				7F9A793A18E75593000CAA69 /* JTSSimpleImageDownloader.h */,
