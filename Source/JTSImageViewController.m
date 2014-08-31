@@ -517,7 +517,6 @@ UIGestureRecognizerDelegate
     
     self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
     CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
-    CGPoint referencePointInWindow = [self.imageInfo.referenceView convertPoint:self.imageInfo.referenceRectCenter toView:nil];
     
     _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
@@ -537,7 +536,7 @@ UIGestureRecognizerDelegate
         [self.imageView setFrame:referenceFrameInMyView];
         [self updateScrollViewAndImageViewForCurrentMetrics];
         
-        BOOL mustRotateDuringTransition = (self.interfaceOrientation != _startingInfo.startingInterfaceOrientation);
+        BOOL mustRotateDuringTransition = ([UIApplication sharedApplication].statusBarOrientation != _startingInfo.startingInterfaceOrientation);
         if (mustRotateDuringTransition) {
             CGRect newStartingRect = [self.snapshotView convertRect:_startingInfo.startingReferenceFrameForThumbnail toView:self.view];
             [self.imageView setFrame:newStartingRect];
