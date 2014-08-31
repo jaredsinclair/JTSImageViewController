@@ -23,5 +23,6 @@
 
 - (NSString *)displayableTitleAltTextSummary;
 - (NSString *)combinedTitleAndAltText;
+- (CGPoint)referenceRectCenter;
 
 @end

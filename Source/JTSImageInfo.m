@@ -54,6 +54,11 @@
             ];
 }
 
+- (CGPoint)referenceRectCenter {
+    return CGPointMake(self.referenceRect.origin.x + self.referenceRect.size.width/2.0f,
+                       self.referenceRect.origin.y + self.referenceRect.size.height/2.0f);
+}
+
 @end
 
 
