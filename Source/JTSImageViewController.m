@@ -373,6 +373,7 @@ UIGestureRecognizerDelegate
     CGRect referenceFrameInMyView = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
     self.imageView = [[UIImageView alloc] initWithFrame:referenceFrameInMyView];
+    self.imageView.layer.cornerRadius = self.imageInfo.referenceCornerRadius;
     self.imageView.contentMode = UIViewContentModeScaleAspectFill;
     self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
@@ -1012,7 +1013,6 @@ UIGestureRecognizerDelegate
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
-        NSLog(@"DISMISS - DISMISS - DISMISS - DISMISS - DISMISS - DISMISS - DISMISS");
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
