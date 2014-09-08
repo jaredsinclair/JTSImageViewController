@@ -374,6 +374,7 @@ UIGestureRecognizerDelegate
     
     self.imageView = [[UIImageView alloc] initWithFrame:referenceFrameInMyView];
     self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+    self.imageView.userInteractionEnabled = YES;
     self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
     
@@ -1495,6 +1496,20 @@ UIGestureRecognizerDelegate
         if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerDidLongPress:)]) {
             [self.interactionsDelegate imageViewerDidLongPress:self];
         }
+        
+        BOOL allowCopy = YES;
+        
+        if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerAllowCopyToPasteboard:)]) {
+            allowCopy = [self.interactionsDelegate imageViewerAllowCopyToPasteboard:self];
+        }
+        
+        if (allowCopy) {
+            CGPoint location = [sender locationInView:self.imageView];
+            UIMenuController *menuController = [UIMenuController sharedMenuController];
+            
+            [menuController setTargetRect:CGRectMake(location.x, location.y, 0.0f, 0.0f) inView:self.imageView];
+            [menuController setMenuVisible:YES animated:YES];
+        }
     }
 }
 
@@ -1689,6 +1704,28 @@ UIGestureRecognizerDelegate
         progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
     }
     [self.progressView setProgress:progress];
+}
+
+#pragma mark - UIResponder
+
+- (BOOL)canBecomeFirstResponder {
+    
+    if (self.image) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    
+    if (self.image && action == @selector(copy:)) {
+        return YES;
+    }
+    return NO;
+}
+
+- (void)copy:(id)sender {
+    [[UIPasteboard generalPasteboard] setImage:self.image];
 }
 
 #pragma mark - Accessibility
