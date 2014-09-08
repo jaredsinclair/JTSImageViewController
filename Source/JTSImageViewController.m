@@ -1497,7 +1497,7 @@ UIGestureRecognizerDelegate
             [self.interactionsDelegate imageViewerDidLongPress:self];
         }
         
-        BOOL allowCopy = YES;
+        BOOL allowCopy = NO;
         
         if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerAllowCopyToPasteboard:)]) {
             allowCopy = [self.interactionsDelegate imageViewerAllowCopyToPasteboard:self];
