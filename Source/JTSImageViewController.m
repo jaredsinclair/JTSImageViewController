@@ -996,7 +996,6 @@ UIGestureRecognizerDelegate
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
-        NSLog(@"DISMISS - DISMISS - DISMISS - DISMISS - DISMISS - DISMISS - DISMISS");
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
