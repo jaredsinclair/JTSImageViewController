@@ -183,6 +183,11 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  */
 - (BOOL)imageViewerShouldTemporarilyIgnoreTouches:(JTSImageViewController *)imageViewer;
 
+/**
+ Called when the image viewer is deciding whether to display the Menu Controller, to allow the user to copy the image to the general pasteboard.
+ */
+- (BOOL)imageViewerAllowCopyToPasteboard:(JTSImageViewController *)imageViewer;
+
 @end
 
 ///--------------------------------------------------------------------------------------------------------------------
