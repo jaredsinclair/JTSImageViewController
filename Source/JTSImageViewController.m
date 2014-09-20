@@ -1492,8 +1492,9 @@ UIGestureRecognizerDelegate
     }
     
     if (self.image && sender.state == UIGestureRecognizerStateBegan) {
-        if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerDidLongPress:)]) {
-            [self.interactionsDelegate imageViewerDidLongPress:self];
+        if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerDidLongPress:atRect:)]) {
+            CGPoint location = [sender locationInView:self.imageView];
+            [self.interactionsDelegate imageViewerDidLongPress:self atRect:CGRectMake(location.x, location.y, 0.0f, 0.0f)];
         }
         
         BOOL allowCopy = NO;
