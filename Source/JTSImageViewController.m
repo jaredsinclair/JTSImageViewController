@@ -1493,7 +1493,7 @@ UIGestureRecognizerDelegate
     
     if (self.image && sender.state == UIGestureRecognizerStateBegan) {
         if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerDidLongPress:atRect:)]) {
-            CGPoint location = [sender locationInView:self.imageView];
+            CGPoint location = [sender locationInView:self.view];
             [self.interactionsDelegate imageViewerDidLongPress:self atRect:CGRectMake(location.x, location.y, 0.0f, 0.0f)];
         }
         
