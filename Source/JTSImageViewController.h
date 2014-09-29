@@ -173,7 +173,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 /**
  Called when the image viewer detects a long press.
  */
-- (void)imageViewerDidLongPress:(JTSImageViewController *)imageViewer;
+- (void)imageViewerDidLongPress:(JTSImageViewController *)imageViewer atRect:(CGRect)rect;
 
 /**
  Called when the image viewer is deciding whether to respond to user interactions.
