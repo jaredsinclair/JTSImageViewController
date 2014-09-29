@@ -23,6 +23,7 @@
     [tapRecognizer addTarget:self action:@selector(bigButtonTapped:)];
     [self.bigImageButton addGestureRecognizer:tapRecognizer];
     [self.bigImageButton setAccessibilityLabel:@"Photo of a cat wearing a Bane costume."];
+    self.bigImageButton.layer.cornerRadius = 16.0;
 }
 
 - (NSUInteger)supportedInterfaceOrientations {
@@ -36,7 +37,8 @@
     imageInfo.image = self.bigImageButton.image;
     imageInfo.referenceRect = self.bigImageButton.frame;
     imageInfo.referenceView = self.bigImageButton.superview;
-    imageInfo.contentMode = self.bigImageButton.contentMode;
+    imageInfo.referenceContentMode = self.bigImageButton.contentMode;
+    imageInfo.referenceCornerRadius = self.bigImageButton.layer.cornerRadius;
     
     // Setup view controller
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
