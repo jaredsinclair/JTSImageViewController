@@ -173,7 +173,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 /**
  Called when the image viewer detects a long press.
  */
-- (void)imageViewerDidLongPress:(JTSImageViewController *)imageViewer;
+- (void)imageViewerDidLongPress:(JTSImageViewController *)imageViewer atRect:(CGRect)rect;
 
 /**
  Called when the image viewer is deciding whether to respond to user interactions.
@@ -182,6 +182,11 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  This method is called more than once. Returning NO does not "lock" the image viewer.
  */
 - (BOOL)imageViewerShouldTemporarilyIgnoreTouches:(JTSImageViewController *)imageViewer;
+
+/**
+ Called when the image viewer is deciding whether to display the Menu Controller, to allow the user to copy the image to the general pasteboard.
+ */
+- (BOOL)imageViewerAllowCopyToPasteboard:(JTSImageViewController *)imageViewer;
 
 @end
 
