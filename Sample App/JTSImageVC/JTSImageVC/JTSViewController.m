@@ -19,7 +19,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self.bigImageButton addTarget:self action:@selector(bigButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] init];
+    [tapRecognizer addTarget:self action:@selector(bigButtonTapped:)];
+    [self.bigImageButton addGestureRecognizer:tapRecognizer];
     [self.bigImageButton setAccessibilityLabel:@"Photo of a cat wearing a Bane costume."];
 }
 
@@ -31,9 +33,10 @@
     
     // Create image info
     JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
-    imageInfo.image = [self.bigImageButton backgroundImageForState:UIControlStateNormal];
+    imageInfo.image = self.bigImageButton.image;
     imageInfo.referenceRect = self.bigImageButton.frame;
     imageInfo.referenceView = self.bigImageButton.superview;
+    imageInfo.contentMode = self.bigImageButton.contentMode;
     
     // Setup view controller
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
