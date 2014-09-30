@@ -30,8 +30,9 @@ typedef NS_ENUM(NSInteger, JTSImageViewControllerTransition) {
 };
 
 typedef NS_ENUM(NSInteger, JTSImageViewControllerBackgroundStyle) {
-    JTSImageViewControllerBackgroundStyle_ScaledDimmed,
     JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred,
+    JTSImageViewControllerBackgroundStyle_ScaledDimmed,
+    JTSImageViewControllerBackgroundStyle_Dimmed,
 };
 
 extern CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;

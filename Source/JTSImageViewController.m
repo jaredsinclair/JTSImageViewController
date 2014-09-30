@@ -621,7 +621,12 @@ typedef struct {
                          [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                      }
                      
-                     CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
+                     CGFloat scaling;
+                     if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_Dimmed) {
+                         scaling = 1.0;
+                     } else {
+                         scaling = JTSImageViewController_MinimumBackgroundScaling;
+                     }
                      weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
                      
                      if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
@@ -733,7 +738,12 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 CGFloat targetScaling;
+                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_Dimmed) {
+                     targetScaling = 1.0;
+                 } else {
+                     targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 }
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
@@ -826,7 +836,12 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 CGFloat targetScaling;
+                 if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_Dimmed) {
+                     targetScaling = 1.0;
+                 } else {
+                     targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 }
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
@@ -1304,8 +1319,13 @@ typedef struct {
             if (self.mode == JTSImageViewControllerMode_Image) {
                 self.scrollView.frame = self.view.bounds;
             }
-            CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
-            self.snapshotView.transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(scaling, scaling));
+            CGFloat targetScaling;
+            if (self.backgroundStyle == JTSImageViewControllerBackgroundStyle_Dimmed) {
+                targetScaling = 1.0;
+            } else {
+                targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+            }
+            self.snapshotView.transform = CGAffineTransformConcat(transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
         } else {
             self.snapshotView.transform = transform;
         }
