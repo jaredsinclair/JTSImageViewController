@@ -21,11 +21,11 @@ CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0
 CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius = 2.0f;
 
 // Private Constants
-CGFloat const JTSImageViewController_MinimumBackgroundScaling = 0.94f;
-CGFloat const JTSImageViewController_TargetZoomForDoubleTap = 3.0f;
-CGFloat const JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition = 1.25f;
-CGFloat const JTSImageViewController_TransitionAnimationDuration = 0.3f;
-CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
+static CGFloat const JTSImageViewController_MinimumBackgroundScaling = 0.94f;
+static CGFloat const JTSImageViewController_TargetZoomForDoubleTap = 3.0f;
+static CGFloat const JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition = 1.25f;
+static CGFloat const JTSImageViewController_TransitionAnimationDuration = 0.3f;
+static CGFloat const JTSImageViewController_MinimumFlickDismissalVelocity = 800.0f;
 
 typedef struct {
     BOOL statusBarHiddenPriorToPresentation;
@@ -312,6 +312,26 @@ typedef struct {
         _flags.isRotating = NO;
     });
 }
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_7_1
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
+    _flags.rotationTransformIsDirty = YES;
+    _flags.isRotating = YES;
+    typeof(self) __weak weakSelf = self;
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        typeof(self) strongSelf = weakSelf;
+        [strongSelf cancelCurrentImageDrag:NO];
+        [strongSelf updateLayoutsForCurrentOrientation];
+        [strongSelf updateDimmingViewForCurrentZoomScale:NO];
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        typeof(self) strongSelf = weakSelf;
+        JTSImageViewControllerFlags flags = strongSelf.flags;
+        flags.isRotating = NO;
+        strongSelf.flags = flags;
+    }];
+}
+#endif
 
 #pragma mark - Setup
 
@@ -713,8 +733,8 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
+                 CGFloat targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
                      weakSelf.blurredSnapshotView.alpha = 1;
@@ -806,8 +826,8 @@ typedef struct {
                      [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                  }
                  
-                 CGFloat scaling = JTSImageViewController_MinimumBackgroundScaling;
-                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
+                 CGFloat targetScaling = JTSImageViewController_MinimumBackgroundScaling;
+                 weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
                  if (weakSelf.backgroundStyle == JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred) {
                      weakSelf.blurredSnapshotView.alpha = 1;

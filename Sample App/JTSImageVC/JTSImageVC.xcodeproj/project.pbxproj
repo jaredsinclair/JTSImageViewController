@@ -449,6 +449,7 @@
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -463,6 +464,7 @@
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
