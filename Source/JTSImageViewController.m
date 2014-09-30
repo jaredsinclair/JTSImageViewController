@@ -1482,14 +1482,16 @@ typedef struct {
         targetInsets = [self contentInsetForScrollView:1.0f];
     }
     self.view.userInteractionEnabled = NO;
-    _flags.scrollViewIsAnimatingAZoom = YES;
-    self.scrollView.contentInset = targetInsets;
-    [self.scrollView zoomToRect:targetZoomRect animated:YES];
+    
+    [CATransaction begin];
     __weak JTSImageViewController *weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.35 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    [CATransaction setCompletionBlock:^{
+        weakSelf.scrollView.contentInset = targetInsets;
         weakSelf.view.userInteractionEnabled = YES;
         _flags.scrollViewIsAnimatingAZoom = NO;
-    });
+    }];
+    [self.scrollView zoomToRect:targetZoomRect animated:YES];
+    [CATransaction commit];
 }
 
 - (void)imageSingleTapped:(id)sender {

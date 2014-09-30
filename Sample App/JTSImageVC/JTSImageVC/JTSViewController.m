@@ -23,7 +23,7 @@
     [tapRecognizer addTarget:self action:@selector(bigButtonTapped:)];
     [self.bigImageButton addGestureRecognizer:tapRecognizer];
     [self.bigImageButton setAccessibilityLabel:@"Photo of a cat wearing a Bane costume."];
-    self.bigImageButton.layer.cornerRadius = 16.0;
+    self.bigImageButton.layer.cornerRadius = self.bigImageButton.bounds.size.width/2.0f;
 }
 
 - (NSUInteger)supportedInterfaceOrientations {
