@@ -673,13 +673,14 @@ UIGestureRecognizerDelegate
     
     [self.scrollView addSubview:self.imageView];
     
+    [self.scrollView setAlpha:0];
+    
     [viewController presentViewController:self animated:NO completion:^{
         
         if ([UIApplication sharedApplication].statusBarOrientation != _startingInfo.startingInterfaceOrientation) {
             _startingInfo.presentingViewControllerPresentedFromItsUnsupportedOrientation = YES;
         }
-        
-        [self.scrollView setAlpha:0];
+    
         [self.scrollView setFrame:self.view.bounds];
         [self updateScrollViewAndImageViewForCurrentMetrics];
         CGFloat scaling = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
@@ -1473,8 +1474,8 @@ UIGestureRecognizerDelegate
     }
     [self.view setUserInteractionEnabled:NO];
     _flags.scrollViewIsAnimatingAZoom = YES;
-    [self.scrollView setContentInset:targetInsets];
     [self.scrollView zoomToRect:targetZoomRect animated:YES];
+    [self.scrollView setContentInset:targetInsets];
     __weak JTSImageViewController *weakSelf = self;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.35 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [weakSelf.view setUserInteractionEnabled:YES];
