@@ -673,13 +673,14 @@ UIGestureRecognizerDelegate
     
     [self.scrollView addSubview:self.imageView];
     
+    [self.scrollView setAlpha:0];
+    
     [viewController presentViewController:self animated:NO completion:^{
         
         if ([UIApplication sharedApplication].statusBarOrientation != _startingInfo.startingInterfaceOrientation) {
             _startingInfo.presentingViewControllerPresentedFromItsUnsupportedOrientation = YES;
         }
-        
-        [self.scrollView setAlpha:0];
+    
         [self.scrollView setFrame:self.view.bounds];
         [self updateScrollViewAndImageViewForCurrentMetrics];
         CGFloat scaling = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
