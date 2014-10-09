@@ -18,6 +18,7 @@
 @protocol JTSImageViewControllerOptionsDelegate;
 @protocol JTSImageViewControllerInteractionsDelegate;
 @protocol JTSImageViewControllerAccessibilityDelegate;
+@protocol JTSImageViewControllerAnimationDelegate;
 
 typedef NS_ENUM(NSInteger, JTSImageViewControllerMode) {
     JTSImageViewControllerMode_Image,
@@ -59,6 +60,8 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerInteractionsDelegate> interactionsDelegate;
 
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerAccessibilityDelegate> accessibilityDelegate;
+
+@property (weak, nonatomic, readwrite) id <JTSImageViewControllerAnimationDelegate> animationDelegate;
 
 /**
  Designated initializer.
@@ -204,6 +207,25 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (NSString *)accessibilityHintZoomedInForImageViewer:(JTSImageViewController *)imageViewer;
 
 - (NSString *)accessibilityHintZoomedOutForImageViewer:(JTSImageViewController *)imageViewer;
+
+@end
+
+///---------------------------------------------------------------------------------------------------
+/// Animation Delegate
+///---------------------------------------------------------------------------------------------------
+
+@protocol JTSImageViewControllerAnimationDelegate <NSObject>
+@optional
+
+- (void)imageViewerWillBeginPresentation:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView;
+
+- (void)imageViewerWillAnimatePresentation:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView duration:(CGFloat)duration;
+
+- (void)imageViewer:(JTSImageViewController *)imageViewer willAdjustInterfaceForZoomScale:(CGFloat)zoomScale withContainerView:(UIView *)containerView duration:(CGFloat)duration;
+
+- (void)imageViewerWillBeginDismissal:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView;
+
+- (void)imageViewerWillAnimateDismissal:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView duration:(CGFloat)duration;
 
 @end
 

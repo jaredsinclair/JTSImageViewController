@@ -585,6 +585,10 @@ typedef struct {
         
         __weak JTSImageViewController *weakSelf = self;
         
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginPresentation:withContainerView:)]) {
+            [weakSelf.animationDelegate imageViewerWillBeginPresentation:weakSelf withContainerView:weakSelf.view];
+        }
+        
         // Have to dispatch ahead two runloops,
         // or else the image view changes above won't be
         // committed prior to the animations below.
@@ -613,6 +617,10 @@ typedef struct {
                  delay:0
                  options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
                  animations:^{
+                     
+                     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimatePresentation:withContainerView:duration:)]) {
+                         [weakSelf.animationDelegate imageViewerWillAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                     }
                      
                      _flags.isTransitioningFromInitialModalToInteractiveState = YES;
                      
@@ -722,6 +730,10 @@ typedef struct {
         
         __weak JTSImageViewController *weakSelf = self;
         
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginPresentation:withContainerView:)]) {
+            [weakSelf.animationDelegate imageViewerWillBeginPresentation:weakSelf withContainerView:weakSelf.view];
+        }
+        
         // Have to dispatch to the next runloop,
         // or else the image view changes above won't be
         // committed prior to the animations below.
@@ -732,6 +744,10 @@ typedef struct {
              delay:0
              options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
              animations:^{
+                 
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimatePresentation:withContainerView:duration:)]) {
+                     [weakSelf.animationDelegate imageViewerWillAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                 }
                  
                  _flags.isTransitioningFromInitialModalToInteractiveState = YES;
                  
@@ -822,6 +838,10 @@ typedef struct {
             duration *= 4;
         }
         
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginPresentation:withContainerView:)]) {
+            [weakSelf.animationDelegate imageViewerWillBeginPresentation:weakSelf withContainerView:weakSelf.view];
+        }
+        
         // Have to dispatch to the next runloop,
         // or else the image view changes above won't be
         // committed prior to the animations below.
@@ -832,6 +852,10 @@ typedef struct {
              delay:0
              options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut
              animations:^{
+                 
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimatePresentation:withContainerView:duration:)]) {
+                     [weakSelf.animationDelegate imageViewerWillAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                 }
                  
                  _flags.isTransitioningFromInitialModalToInteractiveState = YES;
                  
@@ -944,6 +968,10 @@ typedef struct {
     
     __weak JTSImageViewController *weakSelf = self;
     
+    if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
+        [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
+    }
+    
     // Have to dispatch after or else the image view changes above won't be
     // committed prior to the animations below. A single dispatch_async(dispatch_get_main_queue()
     // wouldn't work under certain scrolling conditions, so it has to be an ugly
@@ -965,6 +993,10 @@ typedef struct {
             weakSelf.imageView.layer.cornerRadius = weakSelf.imageInfo.referenceCornerRadius;
             
             [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+                
+                if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
+                    [weakSelf.animationDelegate imageViewerWillAnimateDismissal:weakSelf withContainerView:weakSelf.view duration:duration];
+                }
                 
                 weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
                 [weakSelf removeMotionEffectsFromSnapshotView];
@@ -1037,7 +1069,16 @@ typedef struct {
         duration *= 4;
     }
     
+    if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
+        [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
+    }
+    
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
+            [weakSelf.animationDelegate imageViewerWillAnimateDismissal:weakSelf withContainerView:weakSelf.view duration:duration];
+        }
+        
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
@@ -1071,7 +1112,16 @@ typedef struct {
         duration *= 4;
     }
     
+    if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
+        [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
+    }
+    
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
+            [weakSelf.animationDelegate imageViewerWillAnimateDismissal:weakSelf withContainerView:weakSelf.view duration:duration];
+        }
+        
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
@@ -1116,7 +1166,16 @@ typedef struct {
     self.textView.delegate = nil;
     self.textView = nil;
     
+    if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
+        [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
+    }
+    
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+        
+        if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
+            [weakSelf.animationDelegate imageViewerWillAnimateDismissal:weakSelf withContainerView:weakSelf.view duration:duration];
+        }
+        
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
@@ -1496,9 +1555,13 @@ typedef struct {
 #pragma mark - Update Dimming View for Zoom Scale
 
 - (void)updateDimmingViewForCurrentZoomScale:(BOOL)animated {
-    CGFloat targetAlpha = (self.scrollView.zoomScale > 1) ? 1.0f : self.alphaForBackgroundDimmingOverlay;
+    CGFloat zoomScale = self.scrollView.zoomScale;
+    CGFloat targetAlpha = (zoomScale > 1) ? 1.0f : self.alphaForBackgroundDimmingOverlay;
     CGFloat duration = (animated) ? 0.35 : 0;
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState animations:^{
+        if ([self.animationDelegate respondsToSelector:@selector(imageViewer:willAdjustInterfaceForZoomScale:withContainerView:duration:)]) {
+            [self.animationDelegate imageViewer:self willAdjustInterfaceForZoomScale:zoomScale withContainerView:self.view duration:duration];
+        }
         self.blackBackdrop.alpha = targetAlpha;
     } completion:nil];
 }
