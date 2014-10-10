@@ -337,7 +337,7 @@ typedef struct {
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification {
     
-    NSString *systemVersion = @"9.1.3";
+    NSString *systemVersion = [UIDevice currentDevice].systemVersion;
     if (systemVersion.floatValue < 8.0) {
         // Early Return
         return;
