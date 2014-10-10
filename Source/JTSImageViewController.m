@@ -401,6 +401,11 @@ typedef struct {
     self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
     self.imageView.layer.allowsEdgeAntialiasing = YES;
+    if ([self.optionsDelegate respondsToSelector:@selector(imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:)]) {
+        if ([self.optionsDelegate imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:self]) {
+            self.imageView.alpha = 0;
+        }
+    }
     
     // We'll add the image view to either the scroll view
     // or the parent view, based on the transition style
