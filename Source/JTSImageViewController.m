@@ -126,6 +126,7 @@ typedef struct {
     
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
         _imageInfo = imageInfo;
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
@@ -193,6 +194,7 @@ typedef struct {
 #pragma mark - NSObject
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
     [_imageDownloadDataTask cancel];
     [self cancelProgressTimer];
 }
@@ -315,7 +317,6 @@ typedef struct {
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_7_1
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
     _flags.rotationTransformIsDirty = YES;
     _flags.isRotating = YES;
     typeof(self) __weak weakSelf = self;
@@ -326,12 +327,53 @@ typedef struct {
         [strongSelf updateDimmingViewForCurrentZoomScale:NO];
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         typeof(self) strongSelf = weakSelf;
+        strongSelf.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
         JTSImageViewControllerFlags flags = strongSelf.flags;
         flags.isRotating = NO;
         strongSelf.flags = flags;
     }];
 }
 #endif
+
+- (void)deviceOrientationDidChange:(NSNotification *)notification {
+    
+    NSString *systemVersion = @"9.1.3";
+    if (systemVersion.floatValue < 8.0) {
+        // Early Return
+        return;
+    }
+    /*
+     viewWillTransitionToSize:withTransitionCoordinator: is not called when rotating from
+     one landscape orientation to the other (or from one portrait orientation to another). 
+     This makes it difficult to preserve the desired behavior of JTSImageViewController. 
+     We want the background snapshot to maintain the illusion that it never rotates. The 
+     only other way to ensure that the background snapshot stays in the correct orientation 
+     is to listen for this notification and respond when we've detected a landscape-to-landscape rotation.
+    */
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    BOOL landscapeToLandscape = UIDeviceOrientationIsLandscape(deviceOrientation) && UIInterfaceOrientationIsLandscape(self.lastUsedOrientation);
+    BOOL portraitToPortrait = UIDeviceOrientationIsPortrait(deviceOrientation) && UIInterfaceOrientationIsPortrait(self.lastUsedOrientation);
+    if (landscapeToLandscape || portraitToPortrait) {
+        UIInterfaceOrientation newInterfaceOrientation = (UIInterfaceOrientation)deviceOrientation;
+        if (newInterfaceOrientation != self.lastUsedOrientation) {
+            self.lastUsedOrientation = newInterfaceOrientation;
+            _flags.rotationTransformIsDirty = YES;
+            _flags.isRotating = YES;
+            typeof(self) __weak weakSelf = self;
+            [UIView animateWithDuration:0.6 animations:^{
+                typeof(self) strongSelf = weakSelf;
+                [strongSelf cancelCurrentImageDrag:NO];
+                [strongSelf updateLayoutsForCurrentOrientation];
+                [strongSelf updateDimmingViewForCurrentZoomScale:NO];
+            } completion:^(BOOL finished) {
+                typeof(self) strongSelf = weakSelf;
+                JTSImageViewControllerFlags flags = strongSelf.flags;
+                flags.isRotating = NO;
+                strongSelf.flags = flags;
+            }];
+        }
+    }
+}
 
 #pragma mark - Setup
 
