@@ -3,6 +3,10 @@ JTSImageViewController
 
 An interactive iOS image viewer that does it all: double tap to zoom, flick to dismiss, et cetera.
 
+## Pull Requests
+
+Pull requests are welcome, but should be submitted on the `dev` branch. Exceptions will be made for critical bug fixes.
+
 ## What Does it Do?
 
 JTSImageViewController is like a "light box" for iOS. It's similar to image viewers you may have seen in apps like Twitter, Tweetbot, and others. It presents an image in a full-screen interactive view. Users can pan and zoom, and use Tweetbot-style dynamic gestures to dismiss it with a fun flick.
@@ -46,10 +50,6 @@ That's it.
 - **Alt-Text Mode:** Need to show the alt text for an image? JTSImageViewController includes an alternate mode that shows a full-screen, centered text view using the same style as the image mode.
 
 - **Handle Long-Presses:** Implement an `interactionsDelegate` to respond to long presses on the image, or to temporarily disable user interactions (comes in handy if you show an overlay that could cause gesture conflict).
-
-## Pull Requests
-
-Pull requests should be submitted on the `dev` branch. Exceptions will be made for critical bug fixes, naturally.
 
 ## License
 
