@@ -44,7 +44,7 @@
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmed];
+                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
     
     // Present the view controller.
     [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];

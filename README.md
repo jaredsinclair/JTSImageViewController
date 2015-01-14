@@ -32,7 +32,7 @@ Usage is pretty simple, though there are some cool options and delegate methods 
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred];
+                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
     
     // Present the view controller.
     [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
