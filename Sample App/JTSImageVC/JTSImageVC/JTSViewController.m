@@ -7,9 +7,7 @@
 //
 
 #import "JTSViewController.h"
-
-#import "JTSImageViewController.h"
-#import "JTSImageInfo.h"
+@import JTSImage;
 
 @interface JTSViewController ()
 
