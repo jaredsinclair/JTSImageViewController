@@ -102,25 +102,25 @@
 @implementation UIImage (JTSImageEffects)
 
 
-- (UIImage *)JTS_applyLightEffect {
+- (UIImage *)applyLightEffect {
     UIColor *tintColor = [UIColor colorWithWhite:1.0 alpha:0.3];
-    return [self JTS_applyBlurWithRadius:30 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
+    return [self applyBlurWithRadius:30 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
 }
 
 
-- (UIImage *)JTS_applyExtraLightEffect {
+- (UIImage *)applyExtraLightEffect {
     UIColor *tintColor = [UIColor colorWithWhite:0.97 alpha:0.82];
-    return [self JTS_applyBlurWithRadius:20 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
+    return [self applyBlurWithRadius:20 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
 }
 
 
-- (UIImage *)JTS_applyDarkEffect {
+- (UIImage *)applyDarkEffect {
     UIColor *tintColor = [UIColor colorWithWhite:0.0 alpha:0.5];
-    return [self JTS_applyBlurWithRadius:5 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
+    return [self applyBlurWithRadius:5 tintColor:tintColor saturationDeltaFactor:1.8 maskImage:nil];
 }
 
 
-- (UIImage *)JTS_applyTintEffectWithColor:(UIColor *)tintColor {
+- (UIImage *)applyTintEffectWithColor:(UIColor *)tintColor {
     const CGFloat EffectColorAlpha = 0.6;
     UIColor *effectColor = tintColor;
     NSInteger componentCount = CGColorGetNumberOfComponents(tintColor.CGColor);
@@ -136,11 +136,11 @@
             effectColor = [UIColor colorWithRed:r green:g blue:b alpha:EffectColorAlpha];
         }
     }
-    return [self JTS_applyBlurWithRadius:10 tintColor:effectColor saturationDeltaFactor:-1.0 maskImage:nil];
+    return [self applyBlurWithRadius:10 tintColor:effectColor saturationDeltaFactor:-1.0 maskImage:nil];
 }
 
 
-- (UIImage *)JTS_applyBlurWithRadius:(CGFloat)blurRadius
+- (UIImage *)applyBlurWithRadius:(CGFloat)blurRadius
                            tintColor:(UIColor *)tintColor
                saturationDeltaFactor:(CGFloat)saturationDeltaFactor
                            maskImage:(UIImage *)maskImage {

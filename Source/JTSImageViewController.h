@@ -21,23 +21,23 @@
 @protocol JTSImageViewControllerAnimationDelegate;
 
 typedef NS_ENUM(NSInteger, JTSImageViewControllerMode) {
-    JTSImageViewControllerMode_Image,
-    JTSImageViewControllerMode_AltText,
+    JTSImageViewControllerModeImage,
+    JTSImageViewControllerModeAltText,
 };
 
 typedef NS_ENUM(NSInteger, JTSImageViewControllerTransition) {
-    JTSImageViewControllerTransition_FromOriginalPosition,
-    JTSImageViewControllerTransition_FromOffscreen,
+    JTSImageViewControllerTransitionFromOriginalPosition,
+    JTSImageViewControllerTransitionFromOffscreen,
 };
 
 typedef NS_OPTIONS(NSInteger, JTSImageViewControllerBackgroundOptions) {
-    JTSImageViewControllerBackgroundOption_None = 0,
-    JTSImageViewControllerBackgroundOption_Scaled = 1 << 0,
-    JTSImageViewControllerBackgroundOption_Blurred = 1 << 1,
+    JTSImageViewControllerBackgroundOptionNone = 0,
+    JTSImageViewControllerBackgroundOptionScaled = 1 << 0,
+    JTSImageViewControllerBackgroundOptionBlurred = 1 << 1,
 };
 
-extern CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
-extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
+extern CGFloat const JTSImageViewControllerDefaultAlphaForBackgroundDimmingOverlay;
+extern CGFloat const JTSImageViewControllerDefaultBackgroundBlurRadius;
 
 ///--------------------------------------------------------------------------------------------------------------------
 /// JTSImageViewController
@@ -128,14 +128,14 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 /**
  The font used in the alt text mode's text view.
  
- This method is only used with `JTSImageViewControllerMode_AltText`.
+ This method is only used with `JTSImageViewControllerModeAltText`.
  */
 - (UIFont *)fontForAltTextInImageViewer:(JTSImageViewController *)imageViewer;
 
 /**
  The tint color applied to tappable text and selection controls.
  
- This method is only used with `JTSImageViewControllerMode_AltText`.
+ This method is only used with `JTSImageViewControllerModeAltText`.
  */
 - (UIColor *)accentColorForAltTextInImageViewer:(JTSImageViewController *)imageView;
 
@@ -151,14 +151,14 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (UIColor *)backgroundColorImageViewInImageViewer:(JTSImageViewController *)imageViewer;
 
 /**
- Defaults to `JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay`.
+ Defaults to `JTSImageViewControllerDefaultAlphaForBackgroundDimmingOverlay`.
  */
 - (CGFloat)alphaForBackgroundDimmingOverlayInImageViewer:(JTSImageViewController *)imageViewer;
 
 /**
- Used with a JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred background style.
+ Used with a JTSImageViewControllerBackgroundStyleScaledDimmedBlurred background style.
  
- Defaults to `JTSImageViewController_DefaultBackgroundBlurRadius`. The larger the radius,
+ Defaults to `JTSImageViewControllerDefaultBackgroundBlurRadius`. The larger the radius,
  the more profound the blur effect. Larger radii may lead to decreased performance on
  older devices. To offset this, JTSImageViewController applies the blur effect to a
  scaled-down snapshot of the background view.

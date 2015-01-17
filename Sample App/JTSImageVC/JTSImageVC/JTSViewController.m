@@ -41,11 +41,11 @@
     // Setup view controller
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
-                                           mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
+                                           mode:JTSImageViewControllerModeImage
+                                           backgroundStyle:JTSImageViewControllerBackgroundOptionScaled];
     
     // Present the view controller.
-    [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
+    [imageViewer showFromViewController:self transition:JTSImageViewControllerTransitionFromOriginalPosition];
 }
 
 @end
