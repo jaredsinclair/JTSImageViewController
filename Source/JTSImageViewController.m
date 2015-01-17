@@ -1453,7 +1453,7 @@ typedef struct {
         _flags.isManuallyResizingTheScrollViewFrame = NO;
     }
     
-    BOOL usingOriginalPositionTransition = (self.transition == JTSImageViewControllerTransitionFromOffscreen);
+    BOOL usingOriginalPositionTransition = (self.transition == JTSImageViewControllerTransitionFromOriginalPosition);
     
     BOOL suppressAdjustments = (usingOriginalPositionTransition && _flags.isAnimatingAPresentationOrDismissal);
     
