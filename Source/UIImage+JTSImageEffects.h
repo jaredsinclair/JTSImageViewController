@@ -97,15 +97,15 @@
 
 @interface UIImage (JTSImageEffects)
 
-- (UIImage *)JTS_applyLightEffect;
+- (UIImage *)applyLightEffect;
 
-- (UIImage *)JTS_applyExtraLightEffect;
+- (UIImage *)applyExtraLightEffect;
 
-- (UIImage *)JTS_applyDarkEffect;
+- (UIImage *)applyDarkEffect;
 
-- (UIImage *)JTS_applyTintEffectWithColor:(UIColor *)tintColor;
+- (UIImage *)applyTintEffectWithColor:(UIColor *)tintColor;
 
-- (UIImage *)JTS_applyBlurWithRadius:(CGFloat)blurRadius
+- (UIImage *)applyBlurWithRadius:(CGFloat)blurRadius
                            tintColor:(UIColor *)tintColor
                saturationDeltaFactor:(CGFloat)saturationDeltaFactor
                            maskImage:(UIImage *)maskImage;

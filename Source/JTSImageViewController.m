@@ -131,7 +131,7 @@ typedef struct {
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundOptions = backgroundOptions;
-        if (_mode == JTSImageViewControllerMode_Image) {
+        if (_mode == JTSImageViewControllerModeImage) {
             [self setupImageAndDownloadIfNecessary:imageInfo];
         }
     }
@@ -146,13 +146,13 @@ typedef struct {
     _startingInfo.statusBarHiddenPriorToPresentation = [UIApplication sharedApplication].statusBarHidden;
     _startingInfo.statusBarStylePriorToPresentation = [UIApplication sharedApplication].statusBarStyle;
     
-    if (self.mode == JTSImageViewControllerMode_Image) {
-        if (transition == JTSImageViewControllerTransition_FromOffscreen) {
+    if (self.mode == JTSImageViewControllerModeImage) {
+        if (transition == JTSImageViewControllerTransitionFromOffscreen) {
             [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
         } else {
             [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController];
         }
-    } else if (self.mode == JTSImageViewControllerMode_AltText) {
+    } else if (self.mode == JTSImageViewControllerModeAltText) {
         [self showAltTextFromViewController:viewController];
     }
 }
@@ -166,22 +166,22 @@ typedef struct {
     
     _flags.isPresented = NO;
     
-    if (self.mode == JTSImageViewControllerMode_AltText) {
+    if (self.mode == JTSImageViewControllerModeAltText) {
         [self dismissByExpandingAltTextToOffscreenPosition];
     }
-    else if (self.mode == JTSImageViewControllerMode_Image) {
+    else if (self.mode == JTSImageViewControllerModeImage) {
         
         if (_flags.imageIsFlickingAwayForDismissal) {
             [self dismissByCleaningUpAfterImageWasFlickedOffscreen];
         }
-        else if (self.transition == JTSImageViewControllerTransition_FromOffscreen) {
+        else if (self.transition == JTSImageViewControllerTransitionFromOffscreen) {
             [self dismissByExpandingImageToOffscreenPosition];
         }
         else {
             BOOL startingRectForThumbnailIsNonZero = (CGRectEqualToRect(CGRectZero, _startingInfo.startingReferenceFrameForThumbnail) == NO);
             BOOL useCollapsingThumbnailStyle = (startingRectForThumbnailIsNonZero
                                                 && self.image != nil
-                                                && self.transition != JTSImageViewControllerTransition_FromOffscreen);
+                                                && self.transition != JTSImageViewControllerTransitionFromOffscreen);
             if (useCollapsingThumbnailStyle) {
                 [self dismissByCollapsingImageBackToOriginalPosition];
             } else {
@@ -274,10 +274,10 @@ typedef struct {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (self.mode == JTSImageViewControllerMode_Image) {
+    if (self.mode == JTSImageViewControllerModeImage) {
         [self viewDidLoadForImageMode];
     }
-    else if (self.mode == JTSImageViewControllerMode_AltText) {
+    else if (self.mode == JTSImageViewControllerModeAltText) {
         [self viewDidLoadForAltTextMode];
     }
 }
@@ -567,7 +567,7 @@ typedef struct {
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
     
-    if (self.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+    if (self.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
         self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
         [self.snapshotView addSubview:self.blurredSnapshotView];
         self.blurredSnapshotView.alpha = 0;
@@ -678,18 +678,18 @@ typedef struct {
                      }
                      
                      CGFloat scaling;
-                     if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled)) {
+                     if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled)) {
                          scaling = 1.0;
                      } else {
                          scaling = JTSImageViewController_MinimumBackgroundScaling;
                      }
                      weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(scaling, scaling));
                      
-                     if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+                     if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
                          weakSelf.blurredSnapshotView.alpha = 1;
                      }
                      
-                     if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled) {
+                     if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled) {
                          [weakSelf addMotionEffectsToSnapshotView];
                      }
                      weakSelf.blackBackdrop.alpha = self.alphaForBackgroundDimmingOverlay;
@@ -744,7 +744,7 @@ typedef struct {
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
     
-    if (self.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+    if (self.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
         self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
         [self.snapshotView addSubview:self.blurredSnapshotView];
         self.blurredSnapshotView.alpha = 0;
@@ -805,18 +805,18 @@ typedef struct {
                  }
                  
                  CGFloat targetScaling;
-                 if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled)) {
+                 if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled)) {
                      targetScaling = 1.0;
                  } else {
                      targetScaling = JTSImageViewController_MinimumBackgroundScaling;
                  }
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
-                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
                      weakSelf.blurredSnapshotView.alpha = 1;
                  }
                  
-                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled) {
+                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled) {
                      [weakSelf addMotionEffectsToSnapshotView];
                  }
                  weakSelf.blackBackdrop.alpha = self.alphaForBackgroundDimmingOverlay;
@@ -848,7 +848,7 @@ typedef struct {
     
     self.snapshotView = [self snapshotFromParentmostViewController:viewController];
     
-    if (self.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+    if (self.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
         self.blurredSnapshotView = [self blurredSnapshotFromParentmostViewController:viewController];
         [self.snapshotView addSubview:self.blurredSnapshotView];
         self.blurredSnapshotView.alpha = 0;
@@ -913,18 +913,18 @@ typedef struct {
                  }
                  
                  CGFloat targetScaling;
-                 if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled)) {
+                 if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled)) {
                      targetScaling = 1.0;
                  } else {
                      targetScaling = JTSImageViewController_MinimumBackgroundScaling;
                  }
                  weakSelf.snapshotView.transform = CGAffineTransformConcat(weakSelf.snapshotView.transform, CGAffineTransformMakeScale(targetScaling, targetScaling));
                  
-                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
                      weakSelf.blurredSnapshotView.alpha = 1;
                  }
                  
-                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled) {
+                 if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled) {
                      [weakSelf addMotionEffectsToSnapshotView];
                  }
                  weakSelf.blackBackdrop.alpha = self.alphaForBackgroundDimmingOverlay;
@@ -1049,7 +1049,7 @@ typedef struct {
                 [weakSelf removeMotionEffectsFromSnapshotView];
                 weakSelf.blackBackdrop.alpha = 0;
                 
-                if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+                if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
                     weakSelf.blurredSnapshotView.alpha = 0;
                 }
                 
@@ -1129,7 +1129,7 @@ typedef struct {
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
-        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
             weakSelf.blurredSnapshotView.alpha = 0;
         }
         weakSelf.scrollView.alpha = 0;
@@ -1172,7 +1172,7 @@ typedef struct {
         weakSelf.snapshotView.transform = weakSelf.currentSnapshotRotationTransform;
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
-        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
             weakSelf.blurredSnapshotView.alpha = 0;
         }
         weakSelf.scrollView.alpha = 0;
@@ -1227,7 +1227,7 @@ typedef struct {
         [weakSelf removeMotionEffectsFromSnapshotView];
         weakSelf.blackBackdrop.alpha = 0;
         textViewSnapshot.alpha = 0;
-        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Blurred) {
+        if (weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOptionBlurred) {
             weakSelf.blurredSnapshotView.alpha = 0;
         }
         CGFloat targetScale = JTSImageViewController_MaxScalingForExpandingOffscreenStyleTransition;
@@ -1285,7 +1285,7 @@ typedef struct {
     UIGraphicsEndImageContext();
     
     CGFloat blurRadius = self.backgroundBlurRadius * performanceDownScalingFactor;
-    UIImage *blurredImage = [image JTS_applyBlurWithRadius:blurRadius tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
+    UIImage *blurredImage = [image applyBlurWithRadius:blurRadius tintColor:nil saturationDeltaFactor:1.0f maskImage:nil];
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:contextBounds];
     imageView.image = blurredImage;
     imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -1338,11 +1338,11 @@ typedef struct {
 
 - (void)updateLayoutsForCurrentOrientation {
     
-    if (self.mode == JTSImageViewControllerMode_Image) {
+    if (self.mode == JTSImageViewControllerModeImage) {
         [self updateScrollViewAndImageViewForCurrentMetrics];
         self.progressContainer.center = CGPointMake(self.view.bounds.size.width/2.0f, self.view.bounds.size.height/2.0f);
     }
-    else if (self.mode == JTSImageViewControllerMode_AltText) {
+    else if (self.mode == JTSImageViewControllerModeAltText) {
         if (_flags.isTransitioningFromInitialModalToInteractiveState == NO) {
             [self verticallyCenterTextInTextView];
         }
@@ -1429,11 +1429,11 @@ typedef struct {
         _flags.rotationTransformIsDirty = NO;
         self.currentSnapshotRotationTransform = transform;
         if (_flags.isPresented) {
-            if (self.mode == JTSImageViewControllerMode_Image) {
+            if (self.mode == JTSImageViewControllerModeImage) {
                 self.scrollView.frame = self.view.bounds;
             }
             CGFloat targetScaling;
-            if (!(self.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled)) {
+            if (!(self.backgroundOptions & JTSImageViewControllerBackgroundOptionScaled)) {
                 targetScaling = 1.0;
             } else {
                 targetScaling = JTSImageViewController_MinimumBackgroundScaling;
@@ -1453,7 +1453,7 @@ typedef struct {
         _flags.isManuallyResizingTheScrollViewFrame = NO;
     }
     
-    BOOL usingOriginalPositionTransition = (self.transition == JTSImageViewControllerTransition_FromOriginalPosition);
+    BOOL usingOriginalPositionTransition = (self.transition == JTSImageViewControllerTransitionFromOriginalPosition);
     
     BOOL suppressAdjustments = (usingOriginalPositionTransition && _flags.isAnimatingAPresentationOrDismissal);
     
