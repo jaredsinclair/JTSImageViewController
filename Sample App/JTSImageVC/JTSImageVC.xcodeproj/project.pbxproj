@@ -10,6 +10,19 @@
 		472FDE9A19DA4B68000C0864 /* Default-1136.png in Resources */ = {isa = PBXBuildFile; fileRef = 472FDE9919DA4B68000C0864 /* Default-1136.png */; };
 		47A333FF19D8F34A00F60031 /* Default-1334.png in Resources */ = {isa = PBXBuildFile; fileRef = 47A333FD19D8F34A00F60031 /* Default-1334.png */; };
 		47A3340019D8F34A00F60031 /* Default-2208.png in Resources */ = {isa = PBXBuildFile; fileRef = 47A333FE19D8F34A00F60031 /* Default-2208.png */; };
+		49CB15921A9642D700C2ECFA /* JTSImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793518E75541000CAA69 /* JTSImageViewController.m */; };
+		49CB15941A9642D700C2ECFA /* JTSImageInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793818E75558000CAA69 /* JTSImageInfo.m */; };
+		49CB15961A9642D700C2ECFA /* JTSSimpleImageDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793B18E75593000CAA69 /* JTSSimpleImageDownloader.m */; };
+		49CB15981A9642D700C2ECFA /* JTSAnimatedGIFUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793E18E755F6000CAA69 /* JTSAnimatedGIFUtility.m */; };
+		49CB159A1A9642D700C2ECFA /* UIImage+JTSImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */; };
+		49CB159C1A9642D700C2ECFA /* UIApplication+JTSImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */; };
+		49CB159D1A96431E00C2ECFA /* JTSImageViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F9A793418E75541000CAA69 /* JTSImageViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		49CB159E1A96431E00C2ECFA /* JTSImageInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F9A793718E75558000CAA69 /* JTSImageInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		49CB159F1A96431E00C2ECFA /* JTSSimpleImageDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F9A793A18E75593000CAA69 /* JTSSimpleImageDownloader.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		49CB15A01A96431E00C2ECFA /* JTSAnimatedGIFUtility.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F9A793D18E755F6000CAA69 /* JTSAnimatedGIFUtility.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		49CB15A11A96431E00C2ECFA /* UIImage+JTSImageEffects.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F9A794018E75712000CAA69 /* UIImage+JTSImageEffects.h */; };
+		49CB15A21A96431E00C2ECFA /* UIApplication+JTSImageViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */; };
+		49CB15A41A9643D600C2ECFA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A790218E754A7000CAA69 /* UIKit.framework */; };
 		7F9A78FF18E754A7000CAA69 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A78FE18E754A7000CAA69 /* Foundation.framework */; };
 		7F9A790118E754A7000CAA69 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A790018E754A7000CAA69 /* CoreGraphics.framework */; };
 		7F9A790318E754A7000CAA69 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A790218E754A7000CAA69 /* UIKit.framework */; };
@@ -48,6 +61,10 @@
 		472FDE9919DA4B68000C0864 /* Default-1136.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-1136.png"; sourceTree = "<group>"; };
 		47A333FD19D8F34A00F60031 /* Default-1334.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-1334.png"; sourceTree = "<group>"; };
 		47A333FE19D8F34A00F60031 /* Default-2208.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-2208.png"; sourceTree = "<group>"; };
+		49CB15781A9642A800C2ECFA /* JTSImageViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = JTSImageViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		49CB157B1A9642A800C2ECFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49CB15881A9642A800C2ECFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49CB15891A9642A800C2ECFA /* JTSImageViewControllerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JTSImageViewControllerTests.m; sourceTree = "<group>"; };
 		7F9A78FB18E754A7000CAA69 /* JTSImageVC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JTSImageVC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F9A78FE18E754A7000CAA69 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7F9A790018E754A7000CAA69 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -84,6 +101,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		49CB15741A9642A800C2ECFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49CB15A41A9643D600C2ECFA /* UIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F9A78F818E754A7000CAA69 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -107,12 +132,47 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		49CB15791A9642A800C2ECFA /* JTSImageViewController */ = {
+			isa = PBXGroup;
+			children = (
+				49CB157A1A9642A800C2ECFA /* Supporting Files */,
+			);
+			path = JTSImageViewController;
+			sourceTree = "<group>";
+		};
+		49CB157A1A9642A800C2ECFA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				49CB157B1A9642A800C2ECFA /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		49CB15861A9642A800C2ECFA /* JTSImageViewControllerTests */ = {
+			isa = PBXGroup;
+			children = (
+				49CB15891A9642A800C2ECFA /* JTSImageViewControllerTests.m */,
+				49CB15871A9642A800C2ECFA /* Supporting Files */,
+			);
+			path = JTSImageViewControllerTests;
+			sourceTree = "<group>";
+		};
+		49CB15871A9642A800C2ECFA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				49CB15881A9642A800C2ECFA /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		7F9A78F218E754A7000CAA69 = {
 			isa = PBXGroup;
 			children = (
 				7F9A793318E754D9000CAA69 /* Source */,
 				7F9A790418E754A7000CAA69 /* Sample App */,
 				7F9A792318E754A7000CAA69 /* Sample App Tests */,
+				49CB15791A9642A800C2ECFA /* JTSImageViewController */,
+				49CB15861A9642A800C2ECFA /* JTSImageViewControllerTests */,
 				7F9A78FD18E754A7000CAA69 /* Frameworks */,
 				7F9A78FC18E754A7000CAA69 /* Products */,
 			);
@@ -123,6 +183,7 @@
 			children = (
 				7F9A78FB18E754A7000CAA69 /* JTSImageVC.app */,
 				7F9A791C18E754A7000CAA69 /* JTSImageVCTests.xctest */,
+				49CB15781A9642A800C2ECFA /* JTSImageViewController.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -210,7 +271,41 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		49CB15751A9642A800C2ECFA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49CB159D1A96431E00C2ECFA /* JTSImageViewController.h in Headers */,
+				49CB159E1A96431E00C2ECFA /* JTSImageInfo.h in Headers */,
+				49CB159F1A96431E00C2ECFA /* JTSSimpleImageDownloader.h in Headers */,
+				49CB15A01A96431E00C2ECFA /* JTSAnimatedGIFUtility.h in Headers */,
+				49CB15A11A96431E00C2ECFA /* UIImage+JTSImageEffects.h in Headers */,
+				49CB15A21A96431E00C2ECFA /* UIApplication+JTSImageViewController.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		49CB15771A9642A800C2ECFA /* JTSImageViewController */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49CB158F1A9642A800C2ECFA /* Build configuration list for PBXNativeTarget "JTSImageViewController" */;
+			buildPhases = (
+				49CB15731A9642A800C2ECFA /* Sources */,
+				49CB15741A9642A800C2ECFA /* Frameworks */,
+				49CB15751A9642A800C2ECFA /* Headers */,
+				49CB15761A9642A800C2ECFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JTSImageViewController;
+			productName = JTSImageViewController;
+			productReference = 49CB15781A9642A800C2ECFA /* JTSImageViewController.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		7F9A78FA18E754A7000CAA69 /* JTSImageVC */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7F9A792D18E754A7000CAA69 /* Build configuration list for PBXNativeTarget "JTSImageVC" */;
@@ -256,6 +351,9 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Nice Boy, LLC";
 				TargetAttributes = {
+					49CB15771A9642A800C2ECFA = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
 					7F9A791B18E754A7000CAA69 = {
 						TestTargetID = 7F9A78FA18E754A7000CAA69;
 					};
@@ -276,11 +374,19 @@
 			targets = (
 				7F9A78FA18E754A7000CAA69 /* JTSImageVC */,
 				7F9A791B18E754A7000CAA69 /* JTSImageVCTests */,
+				49CB15771A9642A800C2ECFA /* JTSImageViewController */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		49CB15761A9642A800C2ECFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F9A78F918E754A7000CAA69 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -307,6 +413,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		49CB15731A9642A800C2ECFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49CB15921A9642D700C2ECFA /* JTSImageViewController.m in Sources */,
+				49CB15941A9642D700C2ECFA /* JTSImageInfo.m in Sources */,
+				49CB15961A9642D700C2ECFA /* JTSSimpleImageDownloader.m in Sources */,
+				49CB15981A9642D700C2ECFA /* JTSAnimatedGIFUtility.m in Sources */,
+				49CB159A1A9642D700C2ECFA /* UIImage+JTSImageEffects.m in Sources */,
+				49CB159C1A9642D700C2ECFA /* UIApplication+JTSImageViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F9A78F718E754A7000CAA69 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -369,6 +488,56 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		49CB158B1A9642A800C2ECFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = JTSImageViewController/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		49CB158C1A9642A800C2ECFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				INFOPLIST_FILE = JTSImageViewController/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		7F9A792B18E754A7000CAA69 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -512,6 +681,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		49CB158F1A9642A800C2ECFA /* Build configuration list for PBXNativeTarget "JTSImageViewController" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49CB158B1A9642A800C2ECFA /* Debug */,
+				49CB158C1A9642A800C2ECFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		7F9A78F618E754A7000CAA69 /* Build configuration list for PBXProject "JTSImageVC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
