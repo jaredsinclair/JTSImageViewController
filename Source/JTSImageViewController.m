@@ -61,10 +61,10 @@ typedef struct {
 
 @interface JTSImageViewController ()
 <
-    UIScrollViewDelegate,
-    UITextViewDelegate,
-    UIViewControllerTransitioningDelegate,
-    UIGestureRecognizerDelegate
+UIScrollViewDelegate,
+UITextViewDelegate,
+UIViewControllerTransitioningDelegate,
+UIGestureRecognizerDelegate
 >
 
 // General Info
@@ -139,7 +139,8 @@ typedef struct {
 }
 
 - (void)showFromViewController:(UIViewController *)viewController
-                    transition:(JTSImageViewControllerTransition)transition {
+                    transition:(JTSImageViewControllerTransition)transition
+                    completion:(void (^)(void))completion {
     
     self.transition = transition;
     
@@ -148,9 +149,9 @@ typedef struct {
     
     if (self.mode == JTSImageViewControllerMode_Image) {
         if (transition == JTSImageViewControllerTransition_FromOffscreen) {
-            [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
+            [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController completion:completion];
         } else {
-            [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController];
+            [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController completion:completion];
         }
     } else if (self.mode == JTSImageViewControllerMode_AltText) {
         [self showAltTextFromViewController:viewController];
@@ -344,12 +345,12 @@ typedef struct {
     }
     /*
      viewWillTransitionToSize:withTransitionCoordinator: is not called when rotating from
-     one landscape orientation to the other (or from one portrait orientation to another). 
-     This makes it difficult to preserve the desired behavior of JTSImageViewController. 
-     We want the background snapshot to maintain the illusion that it never rotates. The 
-     only other way to ensure that the background snapshot stays in the correct orientation 
+     one landscape orientation to the other (or from one portrait orientation to another).
+     This makes it difficult to preserve the desired behavior of JTSImageViewController.
+     We want the background snapshot to maintain the illusion that it never rotates. The
+     only other way to ensure that the background snapshot stays in the correct orientation
      is to listen for this notification and respond when we've detected a landscape-to-landscape rotation.
-    */
+     */
     UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
     BOOL landscapeToLandscape = UIDeviceOrientationIsLandscape(deviceOrientation) && UIInterfaceOrientationIsLandscape(self.lastUsedOrientation);
     BOOL portraitToPortrait = UIDeviceOrientationIsPortrait(deviceOrientation) && UIInterfaceOrientationIsPortrait(self.lastUsedOrientation);
@@ -560,7 +561,7 @@ typedef struct {
 
 #pragma mark - Presentation
 
-- (void)showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController {
+- (void)showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController completion:(void (^)(void))completion {
     
     _flags.isAnimatingAPresentationOrDismissal = YES;
     self.view.userInteractionEnabled = NO;
@@ -731,13 +732,17 @@ typedef struct {
                      } else {
                          weakSelf.view.userInteractionEnabled = YES;
                      }
+                     
+                     if (completion) {
+                         completion();
+                     }
                  }];
             });
         });
     }];
 }
 
-- (void)showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController {
+- (void)showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController completion:(void (^)(void))completion {
     
     _flags.isAnimatingAPresentationOrDismissal = YES;
     self.view.userInteractionEnabled = NO;
@@ -835,6 +840,10 @@ typedef struct {
                  _flags.isPresented = YES;
                  if (_flags.imageDownloadFailed) {
                      [weakSelf dismiss:YES];
+                 }
+                 
+                 if (completion) {
+                     completion();
                  }
              }];
         });

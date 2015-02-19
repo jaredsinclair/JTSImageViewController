@@ -86,7 +86,8 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  Next, there is an animated transition to a full-screen image viewer.
  */
 - (void)showFromViewController:(UIViewController *)viewController
-                    transition:(JTSImageViewControllerTransition)transition;
+                    transition:(JTSImageViewControllerTransition)transition
+                    completion:(void (^)(void))completion;
 
 /**
  Dismisses the image viewer. Must not be called while previous presentation or dismissal is still in flight.
