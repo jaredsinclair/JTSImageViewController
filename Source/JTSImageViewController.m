@@ -709,7 +709,7 @@ typedef struct {
                      CGPoint endCenterForImageView = CGPointMake(weakSelf.view.bounds.size.width/2.0f, weakSelf.view.bounds.size.height/2.0f);
                      weakSelf.imageView.center = endCenterForImageView;
                      
-                     if (weakSelf.image == nil) {
+                     if (weakSelf.image == nil || weakSelf.image == weakSelf.imageInfo.placeholderImage) {
                          weakSelf.progressContainer.alpha = 1.0f;
                      }
                      
