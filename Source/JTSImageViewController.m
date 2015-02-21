@@ -824,7 +824,7 @@ typedef struct {
                  weakSelf.scrollView.alpha = 1.0f;
                  weakSelf.scrollView.transform = CGAffineTransformIdentity;
                  
-                 if (weakSelf.image == nil) {
+                 if (weakSelf.image == nil || weakSelf.image == weakSelf.imageInfo.placeholderImage) {
                      weakSelf.progressContainer.alpha = 1.0f;
                  }
                  
