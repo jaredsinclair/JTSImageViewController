@@ -61,10 +61,10 @@ typedef struct {
 
 @interface JTSImageViewController ()
 <
-    UIScrollViewDelegate,
-    UITextViewDelegate,
-    UIViewControllerTransitioningDelegate,
-    UIGestureRecognizerDelegate
+UIScrollViewDelegate,
+UITextViewDelegate,
+UIViewControllerTransitioningDelegate,
+UIGestureRecognizerDelegate
 >
 
 // General Info
@@ -109,6 +109,8 @@ typedef struct {
 // Image Downloading
 @property (strong, nonatomic) NSURLSessionDataTask *imageDownloadDataTask;
 @property (strong, nonatomic) NSTimer *downloadProgressTimer;
+@property (assign, nonatomic) BOOL imageDownloadUsingCustom;
+@property (strong, nonatomic) NSProgress * customImageProgress;
 
 @end
 
@@ -136,6 +138,47 @@ typedef struct {
         }
     }
     return self;
+}
+
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundStyle
+       customImageLoadingProgress:(NSProgress*)customImageProgress{
+    
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        _imageInfo = imageInfo;
+        _currentSnapshotRotationTransform = CGAffineTransformIdentity;
+        _mode = mode;
+        _backgroundOptions = backgroundStyle;
+        if (_mode == JTSImageViewControllerMode_Image) {
+            _imageDownloadUsingCustom = YES;
+            //set placeholder
+            [self setImage:imageInfo.placeholderImage];
+            //retain NSProgress to be used in place of imageDownloadDataTask
+            _customImageProgress = customImageProgress;
+            [self startProgressTimer];
+        }
+    }
+    return self;
+}
+
+-(void)customImageLoadingDidFinish:(UIImage*)image{
+    
+    if (image) {
+        if (self.isViewLoaded) {
+            [self updateInterfaceWithImage:image];
+        } else {
+            [self setImage:image];
+        }
+    } else if (self.image == nil) {
+        _flags.imageDownloadFailed = YES;
+        if (_flags.isPresented && _flags.isAnimatingAPresentationOrDismissal == NO) {
+            [self dismiss:YES];
+        }
+        // If we're still presenting, at the end of presentation we'll auto dismiss.
+    }
 }
 
 - (void)showFromViewController:(UIViewController *)viewController
@@ -676,7 +719,7 @@ typedef struct {
                      } else {
                          [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationFade];
                      }
-                     
+                    
                      CGFloat scaling;
                      if (!(weakSelf.backgroundOptions & JTSImageViewControllerBackgroundOption_Scaled)) {
                          scaling = 1.0;
@@ -1039,7 +1082,7 @@ typedef struct {
             [weakSelf.imageView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
             weakSelf.imageView.layer.cornerRadius = weakSelf.imageInfo.referenceCornerRadius;
             
-            [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+            [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState| UIViewAnimationOptionCurveEaseInOut animations:^{
                 
                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
                     [weakSelf.animationDelegate imageViewerWillAnimateDismissal:weakSelf withContainerView:weakSelf.view duration:duration];
@@ -1872,13 +1915,25 @@ typedef struct {
 
 - (void)progressTimerFired:(NSTimer *)timer {
     CGFloat progress = 0;
-    CGFloat bytesExpected = self.imageDownloadDataTask.countOfBytesExpectedToReceive;
-    if (bytesExpected > 0 && _flags.imageIsBeingReadFromDisk == NO) {
-        [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveLinear animations:^{
-            self.spinner.alpha = 0;
-            self.progressView.alpha = 1;
-        } completion:nil];
-        progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
+    if(self.imageDownloadUsingCustom){
+        if(self.customImageProgress){
+            //use progress object to determine completion
+            progress = _customImageProgress.fractionCompleted;
+            if(_customImageProgress.totalUnitCount){
+                self.spinner.alpha = 0;
+                self.progressView.alpha = 1;
+            }
+        }
+    } else {
+        //JTSSimpleImageDownloader
+        CGFloat bytesExpected = self.imageDownloadDataTask.countOfBytesExpectedToReceive;
+        if (bytesExpected > 0 && _flags.imageIsBeingReadFromDisk == NO) {
+            [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveLinear animations:^{
+                self.spinner.alpha = 0;
+                self.progressView.alpha = 1;
+            } completion:nil];
+            progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
+        }
     }
     self.progressView.progress = progress;
 }
@@ -1961,6 +2016,5 @@ typedef struct {
 }
 
 @end
-
 
 

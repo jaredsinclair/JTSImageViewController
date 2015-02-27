@@ -32,6 +32,7 @@
 		7FA8566719B2762F00913254 /* banecat-red.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FA8566619B2762F00913254 /* banecat-red.png */; };
 		7FE0848218E7C5C600F2F6B4 /* banecat.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7FE0848118E7C5C600F2F6B4 /* banecat.jpg */; };
 		7FE95B4E18EE0E8100F18370 /* UIApplication+JTSImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */; };
+		C30DCC58191007E900B8445C /* jimpam.gif in Resources */ = {isa = PBXBuildFile; fileRef = C30DCC57191007E900B8445C /* jimpam.gif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +82,7 @@
 		7FE0848118E7C5C600F2F6B4 /* banecat.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banecat.jpg; sourceTree = "<group>"; };
 		7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIApplication+JTSImageViewController.h"; path = "../../../Source/UIApplication+JTSImageViewController.h"; sourceTree = "<group>"; };
 		7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIApplication+JTSImageViewController.m"; path = "../../../Source/UIApplication+JTSImageViewController.m"; sourceTree = "<group>"; };
+		C30DCC57191007E900B8445C /* jimpam.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = jimpam.gif; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 		7F9A790418E754A7000CAA69 /* Sample App */ = {
 			isa = PBXGroup;
 			children = (
+				C30DCC57191007E900B8445C /* jimpam.gif */,
 				7FE0848118E7C5C600F2F6B4 /* banecat.jpg */,
 				7FA8566619B2762F00913254 /* banecat-red.png */,
 				47A333FD19D8F34A00F60031 /* Default-1334.png */,
@@ -285,6 +288,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C30DCC58191007E900B8445C /* jimpam.gif in Resources */,
 				472FDE9A19DA4B68000C0864 /* Default-1136.png in Resources */,
 				7FE0848218E7C5C600F2F6B4 /* banecat.jpg in Resources */,
 				7FA8566719B2762F00913254 /* banecat-red.png in Resources */,

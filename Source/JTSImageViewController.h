@@ -70,13 +70,36 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  
  @param mode The mode to be used. (JTSImageViewController has an alternate alt text mode). Required.
  
- @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred. 
+ @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred.
  The latter is like Tweetbot 3.0's background style.
  */
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions;
 
+/**
+ Initializer for using JTSImageViewController with a custom image downloader for the purpose of easily allowing cooperation with 3rd party libraries for downloading or caching images such as SDWebImage. Caller is responsible for setting the image view via customImageLoadingDidFinish: when image download is finished.
+ 
+ @param imageInfo The source info for image and transition metadata. Required.
+ 
+ @param mode The mode to be used. (JTSImageViewController has an alternate alt text mode). Required.
+ 
+ @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred. The latter is like Tweetbot 3.0's background style.
+ 
+ @param customImageProgress Progress object to be updated by the caller with completed and totalUnitCount to inform of download progress.
+ */
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundStyle
+       customImageLoadingProgress:(NSProgress*)customImageProgress;
+
+
+/**
+ Image setter intended for use only when using custom image downloader to provide the UIImage to be used upon download/retrieval completion.
+ 
+ @param image Image to be displayed
+ */
+-(void)customImageLoadingDidFinish:(UIImage*)image;
 /**
  JTSImageViewController is presented from viewController as a UIKit modal view controller.
  
@@ -120,7 +143,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  and dismissal animations.
  
  This may be helpful if the reference image in your presenting view controller has been
- dimmed, such as for a dark mode. JTSImageViewController otherwise presents the animated 
+ dimmed, such as for a dark mode. JTSImageViewController otherwise presents the animated
  image view at full opacity, which can look jarring.
  */
 - (BOOL)imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:(JTSImageViewController *)imageViewer;
@@ -141,9 +164,9 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 
 /**
  The background color of the image view itself, not to be confused with the background
- color for the view controller's view. 
+ color for the view controller's view.
  
- You may wish to override this method if displaying an image with dark content on an 
+ You may wish to override this method if displaying an image with dark content on an
  otherwise clear background color (such as images from the XKCD What If? site).
  
  The default color is `[UIColor clearColor]`.
@@ -182,7 +205,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 /**
  Called when the image viewer is deciding whether to respond to user interactions.
  
- You may need to return NO if you are presenting custom, temporary UI on top of the image viewer. 
+ You may need to return NO if you are presenting custom, temporary UI on top of the image viewer.
  This method is called more than once. Returning NO does not "lock" the image viewer.
  */
 - (BOOL)imageViewerShouldTemporarilyIgnoreTouches:(JTSImageViewController *)imageViewer;
@@ -228,7 +251,6 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (void)imageViewerWillAnimateDismissal:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView duration:(CGFloat)duration;
 
 @end
-
 
 
 
