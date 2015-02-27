@@ -24,6 +24,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     [self.bigImageButton setAccessibilityLabel:@"Photo of a cat wearing a Bane costume."];
     [self.simpleImageButton setAccessibilityLabel:@"Photo of jim and pam in love"];
     [self.customBigImageButton setAccessibilityLabel:@"Photo of jim and pam in love"];
@@ -40,12 +41,14 @@
     imageInfo.image = [self.bigImageButton backgroundImageForState:UIControlStateNormal];
     imageInfo.referenceRect = self.bigImageButton.frame;
     imageInfo.referenceView = self.bigImageButton.superview;
+    imageInfo.referenceContentMode = self.bigImageButton.contentMode;
+    imageInfo.referenceCornerRadius = self.bigImageButton.layer.cornerRadius;
     
     // Setup view controller
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred];
+                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
     
     
     // Present the view controller.
@@ -63,7 +66,7 @@
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred];
+                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Blurred];
     
     
     // Present the view controller.
@@ -77,6 +80,8 @@
     JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
     imageInfo.referenceRect = self.customBigImageButton.frame;
     imageInfo.referenceView = self.customBigImageButton.superview;
+    imageInfo.referenceContentMode = self.bigImageButton.contentMode;
+    imageInfo.referenceCornerRadius = self.bigImageButton.layer.cornerRadius;
     
     NSProgress * customProgress = [NSProgress progressWithTotalUnitCount:0];
     customProgress.kind = NSProgressKindFile;
@@ -86,7 +91,7 @@
     JTSImageViewController *imageViewer = [[JTSImageViewController alloc]
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
-                                           backgroundStyle:JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred
+                                           backgroundStyle:JTSImageViewControllerBackgroundOption_Blurred
                                            customImageLoadingProgress:self.customProgress];
     NSURLSessionConfiguration * sessionConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
     [sessionConfig setRequestCachePolicy:NSURLRequestReloadIgnoringCacheData];//no cache to allow repeatable testing

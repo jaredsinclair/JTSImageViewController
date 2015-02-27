@@ -10,29 +10,29 @@
 	<string>JTSImageVC</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>F5D39521-8FA9-4276-82BE-B055A2EDD9D3</key>
+		<key>80DA628EAE81E418FCA5040B6FD2F14B521C07CB</key>
 		<string>https://github.com/geoffmacd/JTSImageViewController.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Sample App/JTSImageVC/JTSImageVC.xcodeproj/project.xcworkspace</string>
+	<string>Sample App/JTSImageVC/JTSImageVC.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>F5D39521-8FA9-4276-82BE-B055A2EDD9D3</key>
+		<key>80DA628EAE81E418FCA5040B6FD2F14B521C07CB</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/geoffmacd/JTSImageViewController.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>F5D39521-8FA9-4276-82BE-B055A2EDD9D3</string>
+	<string>80DA628EAE81E418FCA5040B6FD2F14B521C07CB</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>F5D39521-8FA9-4276-82BE-B055A2EDD9D3</string>
+			<string>80DA628EAE81E418FCA5040B6FD2F14B521C07CB</string>
 			<key>IDESourceControlWCCName</key>
 			<string>JTSImageViewController</string>
 		</dict>

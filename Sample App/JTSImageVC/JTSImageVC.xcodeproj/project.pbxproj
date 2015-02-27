@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		472FDE9A19DA4B68000C0864 /* Default-1136.png in Resources */ = {isa = PBXBuildFile; fileRef = 472FDE9919DA4B68000C0864 /* Default-1136.png */; };
+		47A333FF19D8F34A00F60031 /* Default-1334.png in Resources */ = {isa = PBXBuildFile; fileRef = 47A333FD19D8F34A00F60031 /* Default-1334.png */; };
+		47A3340019D8F34A00F60031 /* Default-2208.png in Resources */ = {isa = PBXBuildFile; fileRef = 47A333FE19D8F34A00F60031 /* Default-2208.png */; };
 		7F9A78FF18E754A7000CAA69 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A78FE18E754A7000CAA69 /* Foundation.framework */; };
 		7F9A790118E754A7000CAA69 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A790018E754A7000CAA69 /* CoreGraphics.framework */; };
 		7F9A790318E754A7000CAA69 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F9A790218E754A7000CAA69 /* UIKit.framework */; };
@@ -26,6 +29,7 @@
 		7F9A793C18E75593000CAA69 /* JTSSimpleImageDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793B18E75593000CAA69 /* JTSSimpleImageDownloader.m */; };
 		7F9A793F18E755F6000CAA69 /* JTSAnimatedGIFUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A793E18E755F6000CAA69 /* JTSAnimatedGIFUtility.m */; };
 		7F9A794218E75712000CAA69 /* UIImage+JTSImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */; };
+		7FA8566719B2762F00913254 /* banecat-red.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FA8566619B2762F00913254 /* banecat-red.png */; };
 		7FE0848218E7C5C600F2F6B4 /* banecat.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7FE0848118E7C5C600F2F6B4 /* banecat.jpg */; };
 		7FE95B4E18EE0E8100F18370 /* UIApplication+JTSImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */; };
 		C30DCC58191007E900B8445C /* jimpam.gif in Resources */ = {isa = PBXBuildFile; fileRef = C30DCC57191007E900B8445C /* jimpam.gif */; };
@@ -42,6 +46,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		472FDE9919DA4B68000C0864 /* Default-1136.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-1136.png"; sourceTree = "<group>"; };
+		47A333FD19D8F34A00F60031 /* Default-1334.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-1334.png"; sourceTree = "<group>"; };
+		47A333FE19D8F34A00F60031 /* Default-2208.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-2208.png"; sourceTree = "<group>"; };
 		7F9A78FB18E754A7000CAA69 /* JTSImageVC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JTSImageVC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F9A78FE18E754A7000CAA69 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		7F9A790018E754A7000CAA69 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -71,6 +78,7 @@
 		7F9A793E18E755F6000CAA69 /* JTSAnimatedGIFUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JTSAnimatedGIFUtility.m; path = ../../../Source/JTSAnimatedGIFUtility.m; sourceTree = "<group>"; };
 		7F9A794018E75712000CAA69 /* UIImage+JTSImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIImage+JTSImageEffects.h"; path = "../../../Source/UIImage+JTSImageEffects.h"; sourceTree = "<group>"; };
 		7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIImage+JTSImageEffects.m"; path = "../../../Source/UIImage+JTSImageEffects.m"; sourceTree = "<group>"; };
+		7FA8566619B2762F00913254 /* banecat-red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "banecat-red.png"; sourceTree = "<group>"; };
 		7FE0848118E7C5C600F2F6B4 /* banecat.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banecat.jpg; sourceTree = "<group>"; };
 		7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIApplication+JTSImageViewController.h"; path = "../../../Source/UIApplication+JTSImageViewController.h"; sourceTree = "<group>"; };
 		7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIApplication+JTSImageViewController.m"; path = "../../../Source/UIApplication+JTSImageViewController.m"; sourceTree = "<group>"; };
@@ -137,6 +145,10 @@
 			children = (
 				C30DCC57191007E900B8445C /* jimpam.gif */,
 				7FE0848118E7C5C600F2F6B4 /* banecat.jpg */,
+				7FA8566619B2762F00913254 /* banecat-red.png */,
+				47A333FD19D8F34A00F60031 /* Default-1334.png */,
+				47A333FE19D8F34A00F60031 /* Default-2208.png */,
+				472FDE9919DA4B68000C0864 /* Default-1136.png */,
 				7F9A790D18E754A7000CAA69 /* JTSAppDelegate.h */,
 				7F9A790E18E754A7000CAA69 /* JTSAppDelegate.m */,
 				7F9A791018E754A7000CAA69 /* Main.storyboard */,
@@ -277,7 +289,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				C30DCC58191007E900B8445C /* jimpam.gif in Resources */,
+				472FDE9A19DA4B68000C0864 /* Default-1136.png in Resources */,
 				7FE0848218E7C5C600F2F6B4 /* banecat.jpg in Resources */,
+				7FA8566719B2762F00913254 /* banecat-red.png in Resources */,
+				47A3340019D8F34A00F60031 /* Default-2208.png in Resources */,
+				47A333FF19D8F34A00F60031 /* Default-1334.png in Resources */,
 				7F9A791718E754A7000CAA69 /* Images.xcassets in Resources */,
 				7F9A790918E754A7000CAA69 /* InfoPlist.strings in Resources */,
 				7F9A791218E754A7000CAA69 /* Main.storyboard in Resources */,
@@ -437,6 +453,7 @@
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -451,6 +468,7 @@
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
