@@ -1094,7 +1094,8 @@ typedef struct {
                     [[UIApplication sharedApplication] setStatusBarHidden:_startingInfo.statusBarHiddenPriorToPresentation
                                                             withAnimation:UIStatusBarAnimationNone];
                 }
-                
+
+                [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
                 [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
                     [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
                 }];
