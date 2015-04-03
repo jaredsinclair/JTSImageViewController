@@ -1110,7 +1110,9 @@ typedef struct {
     _flags.isAnimatingAPresentationOrDismissal = YES ;
     _flags.isDismissing = YES;
     
+
     __weak JTSImageViewController *weakSelf = self;
+    [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
     
     CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
     if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
@@ -1186,6 +1188,7 @@ typedef struct {
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
+        [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
@@ -1240,6 +1243,7 @@ typedef struct {
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
+        [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
