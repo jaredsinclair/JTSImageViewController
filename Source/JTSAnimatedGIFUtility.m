@@ -110,6 +110,7 @@ static UIImage *animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const s
         CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, NULL);
         if (imageRef) {
             image = [UIImage imageWithCGImage:imageRef];
+            CGImageRelease(imageRef);
         }
     } else {
         NSArray *const frames = frameArray(count, images, delayCentiseconds, totalDurationCentiseconds);
