@@ -726,6 +726,11 @@ typedef struct {
                      
                      [weakSelf updateScrollViewAndImageViewForCurrentMetrics];
                      
+                     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                         
+                         [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                     }
+                     
                      if (_flags.imageDownloadFailed) {
                          [weakSelf dismiss:YES];
                      } else {
@@ -833,6 +838,12 @@ typedef struct {
                  _flags.isAnimatingAPresentationOrDismissal = NO;
                  weakSelf.view.userInteractionEnabled = YES;
                  _flags.isPresented = YES;
+                 
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                     
+                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                 }
+                 
                  if (_flags.imageDownloadFailed) {
                      [weakSelf dismiss:YES];
                  }
@@ -941,6 +952,12 @@ typedef struct {
                  _flags.isAnimatingAPresentationOrDismissal = NO;
                  weakSelf.view.userInteractionEnabled = YES;
                  _flags.isPresented = YES;
+                 
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                     
+                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                 }
+                 
              }];
         });
     }];
