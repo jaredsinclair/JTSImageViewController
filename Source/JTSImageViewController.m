@@ -555,6 +555,7 @@ typedef struct {
     [self.view addGestureRecognizer:self.longPresserPhoto];
     
     self.panRecognizer = [[UIPanGestureRecognizer alloc] init];
+    self.panRecognizer.maximumNumberOfTouches = 1;
     [self.panRecognizer addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
     self.panRecognizer.delegate = self;
     [self.scrollView addGestureRecognizer:self.panRecognizer];
