@@ -726,9 +726,9 @@ typedef struct {
                      
                      [weakSelf updateScrollViewAndImageViewForCurrentMetrics];
                      
-                     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:)]) {
                          
-                         [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                         [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view];
                      }
                      
                      if (_flags.imageDownloadFailed) {
@@ -839,9 +839,9 @@ typedef struct {
                  weakSelf.view.userInteractionEnabled = YES;
                  _flags.isPresented = YES;
                  
-                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:)]) {
                      
-                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view];
                  }
                  
                  if (_flags.imageDownloadFailed) {
@@ -953,9 +953,9 @@ typedef struct {
                  weakSelf.view.userInteractionEnabled = YES;
                  _flags.isPresented = YES;
                  
-                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:duration:)]) {
+                 if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerDidAnimatePresentation:withContainerView:)]) {
                      
-                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view duration:duration];
+                     [weakSelf.animationDelegate imageViewerDidAnimatePresentation:weakSelf withContainerView:weakSelf.view];
                  }
                  
              }];
