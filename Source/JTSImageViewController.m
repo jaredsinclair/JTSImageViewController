@@ -1019,10 +1019,7 @@ typedef struct {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
 
-    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
-    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
-    [self.snapshotView removeFromSuperview];
-    self.snapshotView = newSnapshotView;
+    [self updateSnapshot];
 
     // Have to dispatch after or else the image view changes above won't be
     // committed prior to the animations below. A single dispatch_async(dispatch_get_main_queue()
@@ -1128,10 +1125,7 @@ typedef struct {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
 
-    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
-    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
-    [self.snapshotView removeFromSuperview];
-    self.snapshotView = newSnapshotView;
+    [self updateSnapshot];
 
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
@@ -1176,10 +1170,7 @@ typedef struct {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
 
-    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
-    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
-    [self.snapshotView removeFromSuperview];
-    self.snapshotView = newSnapshotView;
+    [self updateSnapshot];
 
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
@@ -1236,10 +1227,7 @@ typedef struct {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
 
-    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
-    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
-    [self.snapshotView removeFromSuperview];
-    self.snapshotView = newSnapshotView;
+    [self updateSnapshot];
 
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
@@ -1271,6 +1259,13 @@ typedef struct {
 }
 
 #pragma mark - Snapshots
+
+- (void) updateSnapshot {
+    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+    [self.snapshotView removeFromSuperview];
+    self.snapshotView = newSnapshotView;
+}
 
 - (UIView *)snapshotFromParentmostViewController:(UIViewController *)viewController {
     
