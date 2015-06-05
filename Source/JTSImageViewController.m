@@ -1018,7 +1018,12 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+    [self.snapshotView removeFromSuperview];
+    self.snapshotView = newSnapshotView;
+
     // Have to dispatch after or else the image view changes above won't be
     // committed prior to the animations below. A single dispatch_async(dispatch_get_main_queue()
     // wouldn't work under certain scrolling conditions, so it has to be an ugly
@@ -1122,7 +1127,12 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+    [self.snapshotView removeFromSuperview];
+    self.snapshotView = newSnapshotView;
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1165,7 +1175,12 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+    [self.snapshotView removeFromSuperview];
+    self.snapshotView = newSnapshotView;
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1220,7 +1235,12 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+    [self.snapshotView removeFromSuperview];
+    self.snapshotView = newSnapshotView;
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1256,7 +1276,11 @@ typedef struct {
     
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
-    UIView *snapshot = [presentingViewController.view snapshotViewAfterScreenUpdates:YES];
+    return [self snapshotFromViewController:presentingViewController];
+}
+
+- (UIView *)snapshotFromViewController:(UIViewController *)viewController {
+    UIView *snapshot = [viewController.view snapshotViewAfterScreenUpdates:YES];
     snapshot.clipsToBounds = NO;
     return snapshot;
 }
