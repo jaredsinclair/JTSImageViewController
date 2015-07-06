@@ -24,6 +24,33 @@
     return [[imageURL substringFromIndex:[imageURL length] - 3] isEqualToString:@"gif"];
 }
 
+static NSString * contentTypeForImageData(NSData * data) {
+    uint8_t c;
+    [data getBytes:&c length:1];
+
+    switch (c) {
+        case 0xFF:
+            return @"image/jpeg";
+        case 0x89:
+            return @"image/png";
+        case 0x47:
+            return @"image/gif";
+        case 0x49:
+        case 0x4D:
+            return @"image/tiff";
+    }
+    return nil;
+}
+
++ (BOOL)imageDataIsAGIF:(NSData *)imageData {
+    NSString *imageType = contentTypeForImageData(imageData);
+    if ([imageType isEqualToString:@"image/gif"]) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source, size_t const i) {
     int delayCentiseconds = 1;
     CFDictionaryRef const properties = CGImageSourceCopyPropertiesAtIndex(source, i, NULL);
