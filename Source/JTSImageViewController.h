@@ -154,6 +154,10 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  Defaults to `JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay`.
  */
 - (CGFloat)alphaForBackgroundDimmingOverlayInImageViewer:(JTSImageViewController *)imageViewer;
+/**
+ The default color is `[UIColor blackColor]`.
+ */
+- (UIColor *)colorForBackgroundDimmingOverlayInImageViewer:(JTSImageViewController *)imageViewer;
 
 /**
  Used with a JTSImageViewControllerBackgroundStyle_ScaledDimmedBlurred background style.
