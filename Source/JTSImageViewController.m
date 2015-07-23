@@ -1261,10 +1261,10 @@ typedef struct {
 #pragma mark - Snapshots
 
 - (void) updateSnapshot {
-    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
-    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
-    [self.snapshotView removeFromSuperview];
-    self.snapshotView = newSnapshotView;
+//    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+//    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+//    [self.snapshotView removeFromSuperview];
+//    self.snapshotView = newSnapshotView;
 }
 
 - (UIView *)snapshotFromParentmostViewController:(UIViewController *)viewController {
