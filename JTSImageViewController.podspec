@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/jaredsinclair/JTSImageViewController"
   s.license      = { :type => 'MIT', :file => 'LICENSE'  }
   s.author       = { "Jared Sinclair" => "desk@jaredsinclair.com" }
-  s.source       = { :git => "https://github.com/jaredsinclair/JTSImageViewController.git", :tag => s.version.to_s }
+  s.source       = { :git => "http://github.com/mafmoff/JTSImageViewController.git", :tag => "#{s.version}" }  
   s.platform     = :ios, '7.0'
   s.requires_arc = true
   s.frameworks   = 'UIKit', 'ImageIO', 'Accelerate'
