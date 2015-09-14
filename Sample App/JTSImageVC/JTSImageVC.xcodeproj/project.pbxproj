@@ -253,7 +253,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = JTS;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Nice Boy, LLC";
 				TargetAttributes = {
 					7F9A791B18E754A7000CAA69 = {
@@ -387,6 +387,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -448,6 +449,7 @@
 				GCC_PREFIX_HEADER = "JTSImageVC/JTSImageVC-Prefix.pch";
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jaredsinclair.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
@@ -463,6 +465,7 @@
 				GCC_PREFIX_HEADER = "JTSImageVC/JTSImageVC-Prefix.pch";
 				INFOPLIST_FILE = "JTSImageVC/JTSImageVC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jaredsinclair.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
@@ -474,7 +477,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/JTSImageVC.app/JTSImageVC";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
@@ -485,6 +487,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "JTSImageVCTests/JTSImageVCTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.niceboy.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;
@@ -496,13 +499,13 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/JTSImageVC.app/JTSImageVC";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
 					"$(inherited)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JTSImageVC/JTSImageVC-Prefix.pch";
 				INFOPLIST_FILE = "JTSImageVCTests/JTSImageVCTests-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.niceboy.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = xctest;

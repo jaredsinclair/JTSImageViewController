@@ -28,7 +28,7 @@
     self.bigImageButton.layer.cornerRadius = self.bigImageButton.bounds.size.width/2.0f;
 }
 
-- (NSUInteger)supportedInterfaceOrientations {
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskPortrait;
 }
 
