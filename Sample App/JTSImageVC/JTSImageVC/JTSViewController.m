@@ -28,7 +28,11 @@
     self.bigImageButton.layer.cornerRadius = self.bigImageButton.bounds.size.width/2.0f;
 }
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_8_4
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+#else
+- (NSUInteger)supportedInterfaceOrientations {
+#endif
     return UIInterfaceOrientationMaskPortrait;
 }
 
