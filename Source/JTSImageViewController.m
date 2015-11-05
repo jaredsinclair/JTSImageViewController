@@ -6,19 +6,14 @@
 //  Copyright (c) 2014 Nice Boy LLC. All rights reserved.
 //
 
+#import <MediaPlayer/MediaPlayer.h>
+#import <AVKit/AVKit.h>
+#import <AVFoundation/AVFoundation.h>
 #import "JTSImageViewController.h"
 
 #import "JTSSimpleImageDownloader.h"
 #import "UIImage+JTSImageEffects.h"
 #import "UIApplication+JTSImageViewController.h"
-
-CG_INLINE CGFLOAT_TYPE JTSImageFloatAbs(CGFLOAT_TYPE aFloat) {
-#if CGFLOAT_IS_DOUBLE
-    return fabs(aFloat);
-#else
-    return fabsf(aFloat);
-#endif
-}
 
 ///--------------------------------------------------------------------------------------------------------------------
 /// Definitions
@@ -69,15 +64,16 @@ typedef struct {
 
 @interface JTSImageViewController ()
 <
-    UIScrollViewDelegate,
-    UITextViewDelegate,
-    UIViewControllerTransitioningDelegate,
-    UIGestureRecognizerDelegate
+UIScrollViewDelegate,
+UITextViewDelegate,
+UIViewControllerTransitioningDelegate,
+UIGestureRecognizerDelegate
 >
 
 // General Info
-@property (strong, nonatomic, readwrite) JTSImageInfo *imageInfo;
-@property (strong, nonatomic, readwrite) UIImage *image;
+@property (strong, nonatomic, readwrite) NSArray *imageInfoArray;//JTSMediaInfo *imageInfo;
+@property (strong, nonatomic, readwrite) NSMutableArray *imageArray;//UIImage *image;
+@property (nonatomic, readwrite) int currentIndex;
 @property (assign, nonatomic, readwrite) JTSImageViewControllerTransition transition;
 @property (assign, nonatomic, readwrite) JTSImageViewControllerMode mode;
 @property (assign, nonatomic, readwrite) JTSImageViewControllerBackgroundOptions backgroundOptions;
@@ -94,11 +90,14 @@ typedef struct {
 @property (strong, nonatomic) UIView *snapshotView;
 @property (strong, nonatomic) UIView *blurredSnapshotView;
 @property (strong, nonatomic) UIView *blackBackdrop;
+@property (nonatomic, strong) UIView *mediaView;
+@property (nonatomic, strong) AVPlayerViewController *moviePlayerViewController;
 @property (strong, nonatomic) UIImageView *imageView;
 @property (strong, nonatomic) UIScrollView *scrollView;
 @property (strong, nonatomic) UITextView *textView;
 @property (strong, nonatomic) UIProgressView *progressView;
 @property (strong, nonatomic) UIActivityIndicatorView *spinner;
+@property (strong, nonatomic) UIView *galleryContainerView;
 
 // Gesture Recognizers
 @property (strong, nonatomic) UITapGestureRecognizer *singleTapperPhoto;
@@ -128,26 +127,42 @@ typedef struct {
 
 #pragma mark - Public
 
-- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+- (instancetype)initWithImageInfo:(JTSMediaInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions {
-    
+    self = [self initWIthImageInfoArray:@[imageInfo] startingIndex:0 mode:mode backgroundStyle:backgroundOptions];
+    return self;
+}
+
+- (instancetype)initWIthImageInfoArray:(NSArray *)imageInfoArray
+                         startingIndex:(int)startingIndex
+                                  mode:(JTSImageViewControllerMode)mode
+                       backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions
+{
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
-        _imageInfo = imageInfo;
+        _imageInfoArray = imageInfoArray;
+        _imageArray = [[NSMutableArray alloc] initWithCapacity:_imageInfoArray.count];
+        for (int i = 0; i < _imageInfoArray.count; i++)
+        {
+            UIImage *image = [UIImage new];
+            [_imageArray addObject:image];
+        }
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
+        _currentIndex = startingIndex;
         _mode = mode;
         _backgroundOptions = backgroundOptions;
         if (_mode == JTSImageViewControllerMode_Image) {
-            [self setupImageAndDownloadIfNecessary:imageInfo];
+            [self setupImageAndDownloadIfNecessary:imageInfoArray];
         }
     }
     return self;
 }
 
 - (void)showFromViewController:(UIViewController *)viewController
-                    transition:(JTSImageViewControllerTransition)transition {
+                    transition:(JTSImageViewControllerTransition)transition
+                    completion:(void (^)(void))completion {
     
     self.transition = transition;
     
@@ -156,9 +171,9 @@ typedef struct {
     
     if (self.mode == JTSImageViewControllerMode_Image) {
         if (transition == JTSImageViewControllerTransition_FromOffscreen) {
-            [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController];
+            [self showImageViewerByScalingDownFromOffscreenPositionWithViewController:viewController completion:completion];
         } else {
-            [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController];
+            [self showImageViewerByExpandingFromOriginalPositionFromViewController:viewController completion:completion];
         }
     } else if (self.mode == JTSImageViewControllerMode_AltText) {
         [self showAltTextFromViewController:viewController];
@@ -179,6 +194,13 @@ typedef struct {
     }
     else if (self.mode == JTSImageViewControllerMode_Image) {
         
+        if (self.imageInfoArray.count > 1)
+        {
+            [UIView animateWithDuration:0.3 animations:^{
+                self.galleryContainerView.alpha = 0;
+            }];
+        }
+        
         if (_flags.imageIsFlickingAwayForDismissal) {
             [self dismissByCleaningUpAfterImageWasFlickedOffscreen];
         }
@@ -187,8 +209,9 @@ typedef struct {
         }
         else {
             BOOL startingRectForThumbnailIsNonZero = (CGRectEqualToRect(CGRectZero, _startingInfo.startingReferenceFrameForThumbnail) == NO);
+            UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
             BOOL useCollapsingThumbnailStyle = (startingRectForThumbnailIsNonZero
-                                                && self.image != nil
+                                                && image != nil
                                                 && self.transition != JTSImageViewControllerTransition_FromOffscreen);
             if (useCollapsingThumbnailStyle) {
                 [self dismissByCollapsingImageBackToOriginalPosition];
@@ -203,6 +226,7 @@ typedef struct {
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
+    //[[NSNotificationCenter defaultCenter] removeObserver:self name:MPMoviePlayerReadyForDisplayDidChangeNotification object:nil];
     [_imageDownloadDataTask cancel];
     [self cancelProgressTimer];
 }
@@ -352,12 +376,12 @@ typedef struct {
     }
     /*
      viewWillTransitionToSize:withTransitionCoordinator: is not called when rotating from
-     one landscape orientation to the other (or from one portrait orientation to another). 
-     This makes it difficult to preserve the desired behavior of JTSImageViewController. 
-     We want the background snapshot to maintain the illusion that it never rotates. The 
-     only other way to ensure that the background snapshot stays in the correct orientation 
+     one landscape orientation to the other (or from one portrait orientation to another).
+     This makes it difficult to preserve the desired behavior of JTSImageViewController.
+     We want the background snapshot to maintain the illusion that it never rotates. The
+     only other way to ensure that the background snapshot stays in the correct orientation
      is to listen for this notification and respond when we've detected a landscape-to-landscape rotation.
-    */
+     */
     UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
     BOOL landscapeToLandscape = UIDeviceOrientationIsLandscape(deviceOrientation) && UIInterfaceOrientationIsLandscape(self.lastUsedOrientation);
     BOOL portraitToPortrait = UIDeviceOrientationIsPortrait(deviceOrientation) && UIInterfaceOrientationIsPortrait(self.lastUsedOrientation);
@@ -385,44 +409,54 @@ typedef struct {
 
 #pragma mark - Setup
 
-- (void)setupImageAndDownloadIfNecessary:(JTSImageInfo *)imageInfo {
-    if (imageInfo.image) {
-        self.image = imageInfo.image;
-    }
-    else {
-        
-        self.image = imageInfo.placeholderImage;
-        
-        BOOL fromDisk = [imageInfo.imageURL.absoluteString hasPrefix:@"file://"];
-        _flags.imageIsBeingReadFromDisk = fromDisk;
-        
-        typeof(self) __weak weakSelf = self;
-        NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
-            typeof(self) strongSelf = weakSelf;
-            [strongSelf cancelProgressTimer];
-            if (image) {
-                if (strongSelf.isViewLoaded) {
-                    [strongSelf updateInterfaceWithImage:image];
-                } else {
-                    strongSelf.image = image;
+- (void)setupImageAndDownloadIfNecessary:(NSArray *)imageInfoArray
+{
+    
+    for (int i = 0; i < imageInfoArray.count; i++)
+    {
+        JTSMediaInfo *imageInfo = imageInfoArray[i];
+        if (imageInfo.image) {
+            [self.imageArray replaceObjectAtIndex:i withObject:imageInfo.image];
+            //self.image = imageInfo.image;
+        }
+        else {
+            [self.imageArray replaceObjectAtIndex:i withObject:imageInfo.placeholderImage];
+            //self.image = imageInfo.placeholderImage;
+            
+            BOOL fromDisk = [imageInfo.imageURL.absoluteString hasPrefix:@"file://"];
+            _flags.imageIsBeingReadFromDisk = fromDisk;
+            
+            typeof(self) __weak weakSelf = self;
+            NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
+                typeof(self) strongSelf = weakSelf;
+                [strongSelf cancelProgressTimer];
+                
+                UIImage *strongImage = [strongSelf.imageArray objectAtIndex:strongSelf.currentIndex];
+                
+                if (image) {
+                    if (strongSelf.isViewLoaded) {
+                        strongSelf.currentIndex = i;
+                        [strongSelf updateInterfaceWithImage:image];
+                    } else {
+                        [strongSelf.imageArray replaceObjectAtIndex:i withObject:image];
+                    }
+                } else if (strongImage == nil) {
+                    _flags.imageDownloadFailed = YES;
+                    if (_flags.isPresented && _flags.isAnimatingAPresentationOrDismissal == NO) {
+                        [strongSelf dismiss:YES];
+                    }
+                    // If we're still presenting, at the end of presentation we'll auto dismiss.
                 }
-            } else if (strongSelf.image == nil) {
-                _flags.imageDownloadFailed = YES;
-                if (_flags.isPresented && _flags.isAnimatingAPresentationOrDismissal == NO) {
-                    [strongSelf dismiss:YES];
-                }
-                // If we're still presenting, at the end of presentation we'll auto dismiss.
-            }
-        }];
-        
-        self.imageDownloadDataTask = task;
-        
-        [self startProgressTimer];
+            }];
+            
+            self.imageDownloadDataTask = task;
+            
+            [self startProgressTimer];
+        }
     }
 }
 
 - (void)viewDidLoadForImageMode {
-    
     self.view.backgroundColor = [UIColor blackColor];
     self.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     
@@ -441,19 +475,35 @@ typedef struct {
     self.scrollView.accessibilityHint = [self accessibilityHintZoomedOut];
     [self.view addSubview:self.scrollView];
     
-    CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    
+    CGRect referenceFrameInWindow = [imageInfo.referenceView convertRect:imageInfo.referenceRect toView:nil];
     CGRect referenceFrameInMyView = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
-    self.imageView = [[UIImageView alloc] initWithFrame:referenceFrameInMyView];
-    self.imageView.layer.cornerRadius = self.imageInfo.referenceCornerRadius;
+    self.mediaView = [[UIView alloc] initWithFrame:referenceFrameInMyView];
+    self.mediaView.backgroundColor = [UIColor clearColor];
+    self.mediaView.clipsToBounds = YES;
+    self.mediaView.layer.cornerRadius = imageInfo.referenceCornerRadius;
+    self.mediaView.isAccessibilityElement = NO;
+    self.mediaView.layer.allowsEdgeAntialiasing = YES;
+    
+    self.imageView = [[UIImageView alloc] initWithFrame:self.mediaView.bounds];
     self.imageView.contentMode = UIViewContentModeScaleAspectFill;
-    self.imageView.userInteractionEnabled = YES;
-    self.imageView.isAccessibilityElement = NO;
     self.imageView.clipsToBounds = YES;
-    self.imageView.layer.allowsEdgeAntialiasing = YES;
+    self.imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    [self.mediaView addSubview:self.imageView];
+    
+    if (imageInfo.videoURL) {
+        self.moviePlayerViewController = [[AVPlayerViewController alloc] init];//initWithContentURL:self.imageInfo.videoURL];
+        [self.moviePlayerViewController setPlayer:[AVPlayer playerWithURL:imageInfo.videoURL]];
+        self.moviePlayerViewController.view.frame = self.mediaView.bounds;
+        self.moviePlayerViewController.view.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+        //[self.moviePlayer prepareToPlay];
+    }
+
     if ([self.optionsDelegate respondsToSelector:@selector(imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:)]) {
         if ([self.optionsDelegate imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:self]) {
-            self.imageView.alpha = 0;
+            self.mediaView.alpha = 0;
         }
     }
     
@@ -485,8 +535,10 @@ typedef struct {
     
     self.animator = [[UIDynamicAnimator alloc] initWithReferenceView:self.scrollView];
     
-    if (self.image) {
-        [self updateInterfaceWithImage:self.image];
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    
+    if (image) {
+        [self updateInterfaceWithImage:image];
     }
 }
 
@@ -516,7 +568,9 @@ typedef struct {
     }
     self.textView.font = font;
     
-    self.textView.text = self.imageInfo.displayableTitleAltTextSummary;
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    
+    self.textView.text = imageInfo.displayableTitleAltTextSummary;
     
     UIColor *tintColor = nil;
     if ([self.optionsDelegate respondsToSelector:@selector(accentColorForAltTextInImageViewer:)]) {
@@ -555,7 +609,6 @@ typedef struct {
     [self.view addGestureRecognizer:self.longPresserPhoto];
     
     self.panRecognizer = [[UIPanGestureRecognizer alloc] init];
-    self.panRecognizer.maximumNumberOfTouches = 1;
     [self.panRecognizer addTarget:self action:@selector(dismissingPanGestureRecognizerPanned:)];
     self.panRecognizer.delegate = self;
     [self.scrollView addGestureRecognizer:self.panRecognizer];
@@ -569,7 +622,7 @@ typedef struct {
 
 #pragma mark - Presentation
 
-- (void)showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController {
+- (void)showImageViewerByExpandingFromOriginalPositionFromViewController:(UIViewController *)viewController completion:(void (^)(void))completion {
     
     _flags.isAnimatingAPresentationOrDismissal = YES;
     self.view.userInteractionEnabled = NO;
@@ -587,17 +640,20 @@ typedef struct {
     _startingInfo.startingInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     
     self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
+    
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    
+    CGRect referenceFrameInWindow = [imageInfo.referenceView convertRect:imageInfo.referenceRect toView:nil];
     
     _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
-    if (self.imageInfo.referenceContentMode) {
-        self.imageView.contentMode = self.imageInfo.referenceContentMode;
+    if (imageInfo.referenceContentMode) {
+        self.imageView.contentMode = imageInfo.referenceContentMode;
     }
     
     // This will be moved into the scroll view after
     // the transition finishes.
-    [self.view addSubview:self.imageView];
+    [self.view addSubview:self.mediaView];
     
     [viewController presentViewController:self animated:NO completion:^{
         
@@ -607,29 +663,29 @@ typedef struct {
         
         CGRect referenceFrameInMyView = [self.view convertRect:referenceFrameInWindow fromView:nil];
         _startingInfo.startingReferenceFrameForThumbnail = referenceFrameInMyView;
-        self.imageView.frame = referenceFrameInMyView;
-        self.imageView.layer.cornerRadius = self.imageInfo.referenceCornerRadius;
+        self.mediaView.frame = referenceFrameInMyView;
+        self.mediaView.layer.cornerRadius = imageInfo.referenceCornerRadius;
         [self updateScrollViewAndImageViewForCurrentMetrics];
         
         BOOL mustRotateDuringTransition = ([UIApplication sharedApplication].statusBarOrientation != _startingInfo.startingInterfaceOrientation);
         if (mustRotateDuringTransition) {
             CGRect newStartingRect = [self.snapshotView convertRect:_startingInfo.startingReferenceFrameForThumbnail toView:self.view];
-            self.imageView.frame = newStartingRect;
+            self.mediaView.frame = newStartingRect;
             [self updateScrollViewAndImageViewForCurrentMetrics];
-            self.imageView.transform = self.snapshotView.transform;
+            self.mediaView.transform = self.snapshotView.transform;
             CGPoint centerInRect = CGPointMake(_startingInfo.startingReferenceFrameForThumbnail.origin.x
                                                +_startingInfo.startingReferenceFrameForThumbnail.size.width/2.0f,
                                                _startingInfo.startingReferenceFrameForThumbnail.origin.y
                                                +_startingInfo.startingReferenceFrameForThumbnail.size.height/2.0f);
-            self.imageView.center = centerInRect;
+            self.mediaView.center = centerInRect;
         }
         
         if ([self.optionsDelegate respondsToSelector:@selector(imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:)]) {
             if ([self.optionsDelegate imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:self]) {
-                self.imageView.alpha = 0;
+                self.mediaView.alpha = 0;
                 typeof(self) __weak weakSelf = self;
                 [UIView animateWithDuration:0.15f animations:^{
-                    weakSelf.imageView.alpha = 1;
+                    weakSelf.mediaView.alpha = 1;
                 }];
             }
         }
@@ -662,11 +718,11 @@ typedef struct {
                 
                 CABasicAnimation *cornerRadiusAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
                 cornerRadiusAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-                cornerRadiusAnimation.fromValue = @(weakSelf.imageView.layer.cornerRadius);
+                cornerRadiusAnimation.fromValue = @(weakSelf.mediaView.layer.cornerRadius);
                 cornerRadiusAnimation.toValue = @(0.0);
                 cornerRadiusAnimation.duration = duration;
-                [weakSelf.imageView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
-                weakSelf.imageView.layer.cornerRadius = 0.0;
+                [weakSelf.mediaView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
+                weakSelf.mediaView.layer.cornerRadius = 0.0;
                 
                 [UIView
                  animateWithDuration:duration
@@ -704,30 +760,31 @@ typedef struct {
                      weakSelf.blackBackdrop.alpha = self.alphaForBackgroundDimmingOverlay;
                      
                      if (mustRotateDuringTransition) {
-                         weakSelf.imageView.transform = CGAffineTransformIdentity;
+                         weakSelf.mediaView.transform = CGAffineTransformIdentity;
                      }
                      
                      CGRect endFrameForImageView;
-                     if (weakSelf.image) {
-                         endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakSelf.image.size];
+                     UIImage *weakImage = [weakSelf.imageArray objectAtIndex:weakSelf.currentIndex];
+                     JTSMediaInfo *weakImageInfo = [weakSelf.imageInfoArray objectAtIndex:weakSelf.currentIndex];
+                     if (weakImage) {
+                         endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakImage.size];
                      } else {
-                         endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakSelf.imageInfo.referenceRect.size];
+                         endFrameForImageView = [weakSelf resizedFrameForAutorotatingImageView:weakImageInfo.referenceRect.size];
                      }
-                     weakSelf.imageView.frame = endFrameForImageView;
+                     weakSelf.mediaView.frame = endFrameForImageView;
                      
                      CGPoint endCenterForImageView = CGPointMake(weakSelf.view.bounds.size.width/2.0f, weakSelf.view.bounds.size.height/2.0f);
-                     weakSelf.imageView.center = endCenterForImageView;
+                     weakSelf.mediaView.center = endCenterForImageView;
                      
-                     if (weakSelf.image == nil) {
+                     if (weakImage == nil) {
                          weakSelf.progressContainer.alpha = 1.0f;
                      }
                      
                  } completion:^(BOOL finished) {
-                     
                      _flags.isManuallyResizingTheScrollViewFrame = YES;
                      weakSelf.scrollView.frame = weakSelf.view.bounds;
                      _flags.isManuallyResizingTheScrollViewFrame = NO;
-                     [weakSelf.scrollView addSubview:weakSelf.imageView];
+                     [weakSelf.scrollView addSubview:weakSelf.mediaView];
                      
                      _flags.isTransitioningFromInitialModalToInteractiveState = NO;
                      _flags.isAnimatingAPresentationOrDismissal = NO;
@@ -739,6 +796,56 @@ typedef struct {
                          [weakSelf dismiss:YES];
                      } else {
                          weakSelf.view.userInteractionEnabled = YES;
+                         
+                         //we want to setup these after everything else
+                         //setup thumbnails if media count > 1
+                         if (weakSelf.imageInfoArray.count > 1)
+                         {
+                             //first setup gallery container
+                             weakSelf.galleryContainerView = [[UIView alloc] initWithFrame:CGRectMake(0, weakSelf.view.frame.size.height - 60, weakSelf.view.frame.size.width, 40)];
+                             weakSelf.galleryContainerView.backgroundColor = [UIColor clearColor];
+                             weakSelf.galleryContainerView.alpha = 0;
+                             [weakSelf.view addSubview:weakSelf.galleryContainerView];
+                             
+                             for (int buttonCount = 0; buttonCount < weakSelf.imageArray.count; buttonCount++)
+                             {
+                                 UIImage *image = [weakSelf.imageArray objectAtIndex:buttonCount];
+                                 UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 60, weakSelf.galleryContainerView.frame.size.height)];
+                                 button.imageView.layer.cornerRadius = 5.0f;
+                                 button.imageView.backgroundColor = [UIColor whiteColor];
+                                 button.layer.shadowOpacity = 0.3f;
+                                 button.layer.shadowRadius = 2.0f;
+                                 button.layer.shadowOffset = CGSizeMake(0, 2);
+                                 button.layer.shadowColor = [UIColor blackColor].CGColor;
+                                 button.layer.masksToBounds = NO;
+                                 button.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:button.bounds cornerRadius:5].CGPath;
+                                 button.tag = buttonCount;
+                                 button.imageView.contentMode = UIViewContentModeScaleAspectFill;
+                                 [button setImage:image forState:UIControlStateNormal];
+                                 [button addTarget:self action:@selector(changeImageForButton:) forControlEvents:UIControlEventTouchUpInside];
+                                 [weakSelf.galleryContainerView addSubview:button];
+                             }
+                             
+                             //call this every time layout changes
+                             [weakSelf evenlySpaceButtons:weakSelf.galleryContainerView.subviews inView:weakSelf.galleryContainerView];
+                             
+                             [UIView animateWithDuration:0.3 animations:^{
+                                 weakSelf.galleryContainerView.alpha = 1;
+                             }];
+                         }
+                     }
+                     
+                     if (self.moviePlayerViewController) {
+                         if (self.moviePlayerViewController.readyForDisplay) {
+                             [self resumeVideoPlayback];
+                         }
+                         else {
+                             //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resumeVideoPlayback) name:MPMoviePlayerReadyForDisplayDidChangeNotification object:self.moviePlayer];
+                         }
+                     }
+                     
+                     if (completion) {
+                         completion();
                      }
                  }];
             });
@@ -746,7 +853,35 @@ typedef struct {
     }];
 }
 
-- (void)showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController {
+- (void)evenlySpaceButtons:(NSArray *)buttonArray inView:(UIView *)parentView
+{
+    int widthOfAllButtons = 0;
+    for (int i = 0; i < buttonArray.count; i++)
+    {
+        UIButton *button = [buttonArray objectAtIndex:i];
+        [button setCenter:CGPointMake(0, parentView.frame.size.height / 2.0)];
+        widthOfAllButtons = widthOfAllButtons + button.frame.size.width;
+    }
+    
+    int spaceBetweenButtons = (parentView.frame.size.width - widthOfAllButtons) / (buttonArray.count + 1);
+    
+    UIButton *lastButton = nil;
+    for (int i = 0; i < buttonArray.count; i++)
+    {
+        UIButton *thisButton = [buttonArray objectAtIndex:i];
+        if (lastButton == nil)
+        {
+            [thisButton setFrame:CGRectMake(spaceBetweenButtons, thisButton.frame.origin.y, thisButton.frame.size.width, thisButton.frame.size.height)];
+        } else
+        {
+            [thisButton setFrame:CGRectMake(spaceBetweenButtons + lastButton.frame.origin.x + lastButton.frame.size.width, thisButton.frame.origin.y, thisButton.frame.size.width, thisButton.frame.size.height)];
+        }
+        
+        lastButton = thisButton;
+    }
+}
+
+- (void)showImageViewerByScalingDownFromOffscreenPositionWithViewController:(UIViewController *)viewController completion:(void (^)(void))completion {
     
     _flags.isAnimatingAPresentationOrDismissal = YES;
     self.view.userInteractionEnabled = NO;
@@ -762,10 +897,11 @@ typedef struct {
     [self.view insertSubview:self.snapshotView atIndex:0];
     _startingInfo.startingInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    CGRect referenceFrameInWindow = [imageInfo.referenceView convertRect:imageInfo.referenceRect toView:nil];
     _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
-    [self.scrollView addSubview:self.imageView];
+    [self.scrollView addSubview:self.mediaView];
     
     [viewController presentViewController:self animated:NO completion:^{
         
@@ -833,7 +969,9 @@ typedef struct {
                  weakSelf.scrollView.alpha = 1.0f;
                  weakSelf.scrollView.transform = CGAffineTransformIdentity;
                  
-                 if (weakSelf.image == nil) {
+                 UIImage *weakImage = [weakSelf.imageArray objectAtIndex:weakSelf.currentIndex];
+                 
+                 if (weakImage == nil) {
                      weakSelf.progressContainer.alpha = 1.0f;
                  }
                  
@@ -844,6 +982,19 @@ typedef struct {
                  _flags.isPresented = YES;
                  if (_flags.imageDownloadFailed) {
                      [weakSelf dismiss:YES];
+                 }
+                 
+                 if (self.moviePlayerViewController) {
+                     if (self.moviePlayerViewController.readyForDisplay) {
+                         [self resumeVideoPlayback];
+                     }
+                     else {
+                         //[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resumeVideoPlayback) name:MPMoviePlayerReadyForDisplayDidChangeNotification object:self.moviePlayer];
+                     }
+                 }
+                 
+                 if (completion) {
+                     completion();
                  }
              }];
         });
@@ -866,7 +1017,8 @@ typedef struct {
     [self.view insertSubview:self.snapshotView atIndex:0];
     _startingInfo.startingInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
     self.lastUsedOrientation = [UIApplication sharedApplication].statusBarOrientation;
-    CGRect referenceFrameInWindow = [self.imageInfo.referenceView convertRect:self.imageInfo.referenceRect toView:nil];
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    CGRect referenceFrameInWindow = [imageInfo.referenceView convertRect:imageInfo.referenceRect toView:nil];
     _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation = [self.view convertRect:referenceFrameInWindow fromView:nil];
     
     __weak JTSImageViewController *weakSelf = self;
@@ -1007,18 +1159,18 @@ typedef struct {
     if ([self.optionsDelegate respondsToSelector:@selector(imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:)]) {
         if ([self.optionsDelegate imageViewerShouldFadeThumbnailsDuringPresentationAndDismissal:self]) {
             [UIView animateWithDuration:0.15 delay:0.18 options:0 animations:^{
-                self.imageView.alpha = 0;
+                self.mediaView.alpha = 0;
             } completion:nil];
         }
     }
     
-    CGRect imageFrame = [self.view convertRect:self.imageView.frame fromView:self.scrollView];
-    self.imageView.autoresizingMask = UIViewAutoresizingNone;
-    self.imageView.transform = CGAffineTransformIdentity;
-    self.imageView.layer.transform = CATransform3DIdentity;
-    [self.imageView removeFromSuperview];
-    self.imageView.frame = imageFrame;
-    [self.view addSubview:self.imageView];
+    CGRect imageFrame = [self.view convertRect:self.mediaView.frame fromView:self.scrollView];
+    self.mediaView.autoresizingMask = UIViewAutoresizingNone;
+    self.mediaView.transform = CGAffineTransformIdentity;
+    self.mediaView.layer.transform = CATransform3DIdentity;
+    [self.mediaView removeFromSuperview];
+    self.mediaView.frame = imageFrame;
+    [self.view addSubview:self.mediaView];
     [self.scrollView removeFromSuperview];
     self.scrollView = nil;
     
@@ -1040,13 +1192,15 @@ typedef struct {
                 duration *= 4;
             }
             
+            JTSMediaInfo *weakImageInfo = [weakSelf.imageInfoArray objectAtIndex:weakSelf.currentIndex];
+            
             CABasicAnimation *cornerRadiusAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
             cornerRadiusAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
             cornerRadiusAnimation.fromValue = @(0.0);
-            cornerRadiusAnimation.toValue = @(weakSelf.imageInfo.referenceCornerRadius);
+            cornerRadiusAnimation.toValue = @(weakImageInfo.referenceCornerRadius);
             cornerRadiusAnimation.duration = duration;
-            [weakSelf.imageView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
-            weakSelf.imageView.layer.cornerRadius = weakSelf.imageInfo.referenceCornerRadius;
+            [weakSelf.mediaView.layer addAnimation:cornerRadiusAnimation forKey:@"cornerRadius"];
+            weakSelf.mediaView.layer.cornerRadius = weakImageInfo.referenceCornerRadius;
             
             [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
                 
@@ -1078,14 +1232,14 @@ typedef struct {
                         centerInRect = CGPointMake(rectForCentering.origin.x+rectForCentering.size.width/2.0f,
                                                    rectForCentering.origin.y+rectForCentering.size.height/2.0f);
                     }
-                    weakSelf.imageView.frame = newEndingRect;
-                    weakSelf.imageView.transform = weakSelf.currentSnapshotRotationTransform;
-                    weakSelf.imageView.center = centerInRect;
+                    weakSelf.mediaView.frame = newEndingRect;
+                    weakSelf.mediaView.transform = weakSelf.currentSnapshotRotationTransform;
+                    weakSelf.mediaView.center = centerInRect;
                 } else {
                     if (_startingInfo.presentingViewControllerPresentedFromItsUnsupportedOrientation) {
-                        weakSelf.imageView.frame = _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
+                        weakSelf.mediaView.frame = _startingInfo.startingReferenceFrameForThumbnailInPresentingViewControllersOriginalOrientation;
                     } else {
-                        weakSelf.imageView.frame = _startingInfo.startingReferenceFrameForThumbnail;
+                        weakSelf.mediaView.frame = _startingInfo.startingReferenceFrameForThumbnail;
                     }
                     
                     // Rotation not needed, so fade the status bar back in. Looks nicer.
@@ -1254,6 +1408,68 @@ typedef struct {
     }];
 }
 
+#pragma mark - Switching images
+
+- (void)changeImageForButton:(UIButton *)sender
+{
+    if (_flags.scrollViewIsAnimatingAZoom) {
+        return;
+    }
+    
+    CGPoint point = CGPointMake(self.view.frame.size.width/2, self.view.frame.size.height);
+    __block CGRect targetZoomRect;
+    __block UIEdgeInsets targetInsets;
+    if (self.scrollView.zoomScale != 1.0f)
+    {
+        __weak JTSImageViewController *weakSelf = self;
+        
+        [UIView animateWithDuration:0.15 animations:^{
+            weakSelf.imageView.alpha = 0;
+        } completion:^(BOOL finished) {
+            
+            self.scrollView.accessibilityHint = self.accessibilityHintZoomedOut;
+            CGFloat zoomWidth = self.view.bounds.size.width * self.scrollView.zoomScale;
+            CGFloat zoomHeight = self.view.bounds.size.height * self.scrollView.zoomScale;
+            targetZoomRect = CGRectMake(point.x - (zoomWidth/2.0f), point.y - (zoomHeight/2.0f), zoomWidth, zoomHeight);
+            targetInsets = [self contentInsetForScrollView:1.0f];
+            
+            self.view.userInteractionEnabled = NO;
+            
+            [CATransaction begin];
+            
+            [CATransaction setCompletionBlock:^{
+                weakSelf.scrollView.contentInset = targetInsets;
+                weakSelf.view.userInteractionEnabled = YES;
+                _flags.scrollViewIsAnimatingAZoom = NO;
+            }];
+            [self.scrollView zoomToRect:targetZoomRect animated:NO];
+            [CATransaction commit];
+            
+            UIImage *image = [weakSelf.imageArray objectAtIndex:sender.tag];
+            weakSelf.currentIndex = (int)sender.tag;
+            [weakSelf updateInterfaceWithImage:image];
+            
+            [UIView animateWithDuration:0.15 animations:^{
+                weakSelf.imageView.alpha = 1;
+            }];
+        }];
+    } else
+    {
+        __weak JTSImageViewController *weakSelf = self;
+        [UIView animateWithDuration:0.15 animations:^{
+            weakSelf.imageView.alpha = 0;
+        } completion:^(BOOL finished) {
+            UIImage *image = [weakSelf.imageArray objectAtIndex:sender.tag];
+            weakSelf.currentIndex = (int)sender.tag;
+            [weakSelf updateInterfaceWithImage:image];
+            
+            [UIView animateWithDuration:0.15 animations:^{
+                weakSelf.imageView.alpha = 1;
+            }];
+        }];
+    }
+}
+
 #pragma mark - Snapshots
 
 - (UIView *)snapshotFromParentmostViewController:(UIViewController *)viewController {
@@ -1288,7 +1504,7 @@ typedef struct {
     UIGraphicsBeginImageContextWithOptions(scaledBounds.size, YES, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextConcatCTM(context, CGAffineTransformMakeTranslation(scaledOuterBleed, scaledOuterBleed));
-    [presentingViewController.view drawViewHierarchyInRect:scaledDrawingArea afterScreenUpdates:YES];
+    [presentingViewController.view.window/*presentingViewController.view*/ drawViewHierarchyInRect:scaledDrawingArea afterScreenUpdates:YES];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     
     UIGraphicsEndImageContext();
@@ -1332,11 +1548,11 @@ typedef struct {
 - (void)updateInterfaceWithImage:(UIImage *)image {
     
     if (image) {
-        self.image = image;
+        [self.imageArray replaceObjectAtIndex:self.currentIndex withObject:image];
         self.imageView.image = image;
         self.progressContainer.alpha = 0;
         
-        self.imageView.backgroundColor = [self backgroundColorForImageView];
+        self.mediaView.backgroundColor = [self backgroundColorForImageView];
         
         // Don't update the layouts during a drag.
         if (_flags.isDraggingImage == NO) {
@@ -1466,13 +1682,16 @@ typedef struct {
     
     BOOL suppressAdjustments = (usingOriginalPositionTransition && _flags.isAnimatingAPresentationOrDismissal);
     
+    JTSMediaInfo *imageInfo = [self.imageInfoArray objectAtIndex:self.currentIndex];
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    
     if (suppressAdjustments == NO) {
-        if (self.image) {
-            self.imageView.frame = [self resizedFrameForAutorotatingImageView:self.image.size];
+        if (image) {
+            self.mediaView.frame = [self resizedFrameForAutorotatingImageView:image.size];
         } else {
-            self.imageView.frame = [self resizedFrameForAutorotatingImageView:self.imageInfo.referenceRect.size];
+            self.mediaView.frame = [self resizedFrameForAutorotatingImageView:imageInfo.referenceRect.size];
         }
-        self.scrollView.contentSize = self.imageView.frame.size;
+        self.scrollView.contentSize = self.mediaView.frame.size;
         self.scrollView.contentInset = [self contentInsetForScrollView:self.scrollView.zoomScale];
     }
 }
@@ -1493,8 +1712,9 @@ typedef struct {
     UIEdgeInsets inset = UIEdgeInsetsZero;
     CGFloat boundsHeight = self.scrollView.bounds.size.height;
     CGFloat boundsWidth = self.scrollView.bounds.size.width;
-    CGFloat contentHeight = (self.image.size.height > 0) ? self.image.size.height : boundsHeight;
-    CGFloat contentWidth = (self.image.size.width > 0) ? self.image.size.width : boundsWidth;
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    CGFloat contentHeight = (image.size.height > 0) ? image.size.height : boundsHeight;
+    CGFloat contentWidth = (image.size.width > 0) ? image.size.width : boundsWidth;
     CGFloat minContentHeight;
     CGFloat minContentWidth;
     if (contentHeight > contentWidth) {
@@ -1558,15 +1778,40 @@ typedef struct {
             targetWidth = screenHeight / (nativeHeight / nativeWidth);
         }
     }
-    frame.size = CGSizeMake(targetWidth, targetHeight);
-    frame.origin = CGPointMake(0, 0);
+    
+    CGPoint origin = CGPointZero;
+    CGSize size = CGSizeMake(targetWidth, targetHeight);
+    
+    if (targetWidth > imageSize.width || targetHeight > imageSize.height) {
+        CGPoint center = CGPointMake(size.width/2.0f, size.height/2.0f);
+        size = imageSize;
+        
+        origin = CGPointMake(center.x-size.width/2.0f, center.y-size.height/2.0f);
+    }
+    
+    frame.size = size;
+    frame.origin = origin;
     return frame;
+}
+
+-(void)resumeVideoPlayback {
+    self.moviePlayerViewController.view.frame = self.mediaView.bounds;
+    [self.mediaView insertSubview:self.moviePlayerViewController.view aboveSubview:self.imageView];
+    
+    //self.moviePlayer.initialPlaybackTime = NAN;
+    [self.moviePlayerViewController.player play];
+}
+
+-(void)pauseVideoPlayback {
+    //self.moviePlayer.initialPlaybackTime = self.moviePlayer.currentPlaybackTime;
+    [self.moviePlayerViewController.player pause];
+    [self.moviePlayerViewController.view removeFromSuperview];
 }
 
 #pragma mark - UIScrollViewDelegate
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return self.imageView;
+    return self.mediaView;
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
@@ -1603,7 +1848,7 @@ typedef struct {
     }
     
     CGPoint velocity = [scrollView.panGestureRecognizer velocityInView:scrollView.panGestureRecognizer.view];
-    if (scrollView.zoomScale == 1 && (JTSImageFloatAbs(velocity.x) > 1600 || JTSImageFloatAbs(velocity.y) > 1600 ) ) {
+    if (scrollView.zoomScale == 1 && (fabs(velocity.x) > 1600 || fabs(velocity.y) > 1600 ) ) {
         [self dismiss:YES];
     }
 }
@@ -1611,6 +1856,18 @@ typedef struct {
 #pragma mark - Update Dimming View for Zoom Scale
 
 - (void)updateDimmingViewForCurrentZoomScale:(BOOL)animated {
+    if (self.scrollView.zoomScale == 1.0f)
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            self.galleryContainerView.alpha = 1;
+        }];
+    } else
+    {
+        [UIView animateWithDuration:0.3 animations:^{
+            self.galleryContainerView.alpha = 0;
+        }];
+    }
+    
     CGFloat zoomScale = self.scrollView.zoomScale;
     CGFloat targetAlpha = (zoomScale > 1) ? 1.0f : self.alphaForBackgroundDimmingOverlay;
     CGFloat duration = (animated) ? 0.35 : 0;
@@ -1664,7 +1921,24 @@ typedef struct {
     if (_flags.scrollViewIsAnimatingAZoom) {
         return;
     }
-    [self dismiss:YES];
+    
+    if (self.imageArray.count > 1)
+    {
+        if (self.galleryContainerView.alpha == 1)
+        {
+            [UIView animateWithDuration:0.3 animations:^{
+                self.galleryContainerView.alpha = 0;
+            }];
+        } else
+        {
+            [UIView animateWithDuration:0.3 animations:^{
+                self.galleryContainerView.alpha = 1;
+            }];
+        }
+    } else
+    {
+        [self dismiss:YES];
+    }
 }
 
 - (void)imageLongPressed:(UILongPressGestureRecognizer *)sender {
@@ -1673,7 +1947,9 @@ typedef struct {
         return;
     }
     
-    if (self.image && sender.state == UIGestureRecognizerStateBegan) {
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    
+    if (image && sender.state == UIGestureRecognizerStateBegan) {
         if ([self.interactionsDelegate respondsToSelector:@selector(imageViewerDidLongPress:atRect:)]) {
             CGPoint location = [sender locationInView:self.view];
             [self.interactionsDelegate imageViewerDidLongPress:self atRect:CGRectMake(location.x, location.y, 0.0f, 0.0f)];
@@ -1686,10 +1962,10 @@ typedef struct {
         }
         
         if (allowCopy) {
-            CGPoint location = [sender locationInView:self.imageView];
+            CGPoint location = [sender locationInView:self.mediaView];
             UIMenuController *menuController = [UIMenuController sharedMenuController];
             
-            [menuController setTargetRect:CGRectMake(location.x, location.y, 0.0f, 0.0f) inView:self.imageView];
+            [menuController setTargetRect:CGRectMake(location.x, location.y, 0.0f, 0.0f) inView:self.mediaView];
             [menuController setMenuVisible:YES animated:YES];
         }
     }
@@ -1707,7 +1983,7 @@ typedef struct {
     CGFloat vectorDistance = sqrtf(powf(velocity.x, 2)+powf(velocity.y, 2));
     
     if (panner.state == UIGestureRecognizerStateBegan) {
-        _flags.isDraggingImage = CGRectContainsPoint(self.imageView.frame, locationInView);
+        _flags.isDraggingImage = CGRectContainsPoint(self.mediaView.frame, locationInView);
         if (_flags.isDraggingImage) {
             [self startImageDragging:locationInView translationOffset:UIOffsetZero];
         }
@@ -1719,7 +1995,7 @@ typedef struct {
             newAnchor.y += translation.y + self.imageDragOffsetFromActualTranslation.vertical;
             self.attachmentBehavior.anchorPoint = newAnchor;
         } else {
-            _flags.isDraggingImage = CGRectContainsPoint(self.imageView.frame, locationInView);
+            _flags.isDraggingImage = CGRectContainsPoint(self.mediaView.frame, locationInView);
             if (_flags.isDraggingImage) {
                 UIOffset translationOffset = UIOffsetMake(-1*translation.x, -1*translation.y);
                 [self startImageDragging:locationInView translationOffset:translationOffset];
@@ -1747,17 +2023,19 @@ typedef struct {
 #pragma mark - Dynamic Image Dragging
 
 - (void)startImageDragging:(CGPoint)panGestureLocationInView translationOffset:(UIOffset)translationOffset {
+    [self pauseVideoPlayback];
+    
     self.imageDragStartingPoint = panGestureLocationInView;
     self.imageDragOffsetFromActualTranslation = translationOffset;
     CGPoint anchor = self.imageDragStartingPoint;
-    CGPoint imageCenter = self.imageView.center;
+    CGPoint imageCenter = self.mediaView.center;
     UIOffset offset = UIOffsetMake(panGestureLocationInView.x-imageCenter.x, panGestureLocationInView.y-imageCenter.y);
     self.imageDragOffsetFromImageCenter = offset;
-    self.attachmentBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.imageView offsetFromCenter:offset attachedToAnchor:anchor];
+    self.attachmentBehavior = [[UIAttachmentBehavior alloc] initWithItem:self.mediaView offsetFromCenter:offset attachedToAnchor:anchor];
     [self.animator addBehavior:self.attachmentBehavior];
-    UIDynamicItemBehavior *modifier = [[UIDynamicItemBehavior alloc] initWithItems:@[self.imageView]];
-    modifier.angularResistance = [self appropriateAngularResistanceForView:self.imageView];
-    modifier.density = [self appropriateDensityForView:self.imageView];
+    UIDynamicItemBehavior *modifier = [[UIDynamicItemBehavior alloc] initWithItems:@[self.mediaView]];
+    modifier.angularResistance = [self appropriateAngularResistanceForView:self.mediaView];
+    modifier.density = [self appropriateDensityForView:self.mediaView];
     [self.animator addBehavior:modifier];
 }
 
@@ -1766,8 +2044,9 @@ typedef struct {
     self.attachmentBehavior = nil;
     _flags.isDraggingImage = NO;
     if (animated == NO) {
-        self.imageView.transform = CGAffineTransformIdentity;
-        self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+        self.mediaView.transform = CGAffineTransformIdentity;
+        self.mediaView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+        [self resumeVideoPlayback];
     } else {
         [UIView
          animateWithDuration:0.7
@@ -1778,27 +2057,29 @@ typedef struct {
          UIViewAnimationOptionBeginFromCurrentState
          animations:^{
              if (_flags.isDraggingImage == NO) {
-                 self.imageView.transform = CGAffineTransformIdentity;
+                 self.mediaView.transform = CGAffineTransformIdentity;
                  if (self.scrollView.dragging == NO && self.scrollView.decelerating == NO) {
-                     self.imageView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
+                     self.mediaView.center = CGPointMake(self.scrollView.contentSize.width/2.0f, self.scrollView.contentSize.height/2.0f);
                      [self updateScrollViewAndImageViewForCurrentMetrics];
                  }
              }
-         } completion:nil];
+         } completion:^(BOOL finished) {
+             [self resumeVideoPlayback];
+         }];
     }
 }
 
 - (void)dismissImageWithFlick:(CGPoint)velocity {
     _flags.imageIsFlickingAwayForDismissal = YES;
     __weak JTSImageViewController *weakSelf = self;
-    UIPushBehavior *push = [[UIPushBehavior alloc] initWithItems:@[self.imageView] mode:UIPushBehaviorModeInstantaneous];
+    UIPushBehavior *push = [[UIPushBehavior alloc] initWithItems:@[self.mediaView] mode:UIPushBehaviorModeInstantaneous];
     push.pushDirection = CGVectorMake(velocity.x*0.1, velocity.y*0.1);
-    [push setTargetOffsetFromCenter:self.imageDragOffsetFromImageCenter forItem:self.imageView];
+    [push setTargetOffsetFromCenter:self.imageDragOffsetFromImageCenter forItem:self.mediaView];
     push.action = ^{
         if ([weakSelf imageViewIsOffscreen]) {
             [weakSelf.animator removeAllBehaviors];
             weakSelf.attachmentBehavior = nil;
-            [weakSelf.imageView removeFromSuperview];
+            [weakSelf.mediaView removeFromSuperview];
             [weakSelf dismiss:YES];
         }
     };
@@ -1895,23 +2176,24 @@ typedef struct {
 #pragma mark - UIResponder
 
 - (BOOL)canBecomeFirstResponder {
-    
-    if (self.image) {
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    if (image) {
         return YES;
     }
     return NO;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-    
-    if (self.image && action == @selector(copy:)) {
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    if (image && action == @selector(copy:)) {
         return YES;
     }
     return NO;
 }
 
 - (void)copy:(id)sender {
-    [[UIPasteboard generalPasteboard] setImage:self.image];
+    UIImage *image = [self.imageArray objectAtIndex:self.currentIndex];
+    [[UIPasteboard generalPasteboard] setImage:image];
 }
 
 #pragma mark - Accessibility
