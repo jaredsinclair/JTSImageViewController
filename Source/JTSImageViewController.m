@@ -12,6 +12,8 @@
 #import "UIImage+JTSImageEffects.h"
 #import "UIApplication+JTSImageViewController.h"
 
+#pragma mark - Definitions
+
 CG_INLINE CGFLOAT_TYPE JTSImageFloatAbs(CGFLOAT_TYPE aFloat) {
 #if CGFLOAT_IS_DOUBLE
     return fabs(aFloat);
@@ -61,18 +63,30 @@ typedef struct {
     BOOL imageDownloadFailed;
 } JTSImageViewControllerFlags;
 
+// Private Downloader Interface
+@interface __PrivateJTSImageViewControllerDownloader: NSObject <JTSImageViewControllerDownloader>
+- (id)initWithImageInfo:(JTSImageInfo *)imageInfo;
+- (int64_t)countOfBytesExpectedToReceive;
+- (int64_t)countOfBytesReceived;
+@property (strong, nonatomic, readwrite) NSURLSessionDataTask *task;
+@property (strong, nonatomic, readwrite) JTSImageInfo *info;
+@end
+
 #define USE_DEBUG_SLOW_ANIMATIONS 0
 
 ///--------------------------------------------------------------------------------------------------------------------
 /// Anonymous Category
 ///--------------------------------------------------------------------------------------------------------------------
 
+#pragma mark - Public Interface
+
 @interface JTSImageViewController ()
 <
     UIScrollViewDelegate,
     UITextViewDelegate,
     UIViewControllerTransitioningDelegate,
-    UIGestureRecognizerDelegate
+    UIGestureRecognizerDelegate,
+    JTSImageViewControllerDownloaderDelegate
 >
 
 // General Info
@@ -115,7 +129,7 @@ typedef struct {
 @property (assign, nonatomic) UIOffset imageDragOffsetFromImageCenter;
 
 // Image Downloading
-@property (strong, nonatomic) NSURLSessionDataTask *imageDownloadDataTask;
+@property (strong, nonatomic) id<JTSImageViewControllerDownloader> imageDownloader;
 @property (strong, nonatomic) NSTimer *downloadProgressTimer;
 
 @end
@@ -124,13 +138,21 @@ typedef struct {
 /// Implementation
 ///--------------------------------------------------------------------------------------------------------------------
 
-@implementation JTSImageViewController
-
 #pragma mark - Public
+
+@implementation JTSImageViewController
 
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions {
+    
+    return [self initWithImageInfo:imageInfo mode:mode backgroundStyle:backgroundOptions downloaderDelegate:nil];
+}
+
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions
+               downloaderDelegate:(id<JTSImageViewControllerDownloaderDelegate>)downloaderDelegate {
     
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
@@ -139,6 +161,7 @@ typedef struct {
         _currentSnapshotRotationTransform = CGAffineTransformIdentity;
         _mode = mode;
         _backgroundOptions = backgroundOptions;
+        _downloaderDelegate = downloaderDelegate;
         if (_mode == JTSImageViewControllerMode_Image) {
             [self setupImageAndDownloadIfNecessary:imageInfo];
         }
@@ -203,7 +226,9 @@ typedef struct {
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
-    [_imageDownloadDataTask cancel];
+    if ([self.imageDownloader respondsToSelector:NSSelectorFromString(@"cancel:")]) {
+        [self.imageDownloader cancel];
+    }
     [self cancelProgressTimer];
 }
 
@@ -383,6 +408,12 @@ typedef struct {
     }
 }
 
+#pragma mark - Downloader Delegate
+
+- (id <JTSImageViewControllerDownloader>)downloaderForImageInfo:(JTSImageInfo *)imageInfo {
+    return [[__PrivateJTSImageViewControllerDownloader alloc] initWithImageInfo:imageInfo];
+}
+
 #pragma mark - Setup
 
 - (void)setupImageAndDownloadIfNecessary:(JTSImageInfo *)imageInfo {
@@ -396,8 +427,10 @@ typedef struct {
         BOOL fromDisk = [imageInfo.imageURL.absoluteString hasPrefix:@"file://"];
         _flags.imageIsBeingReadFromDisk = fromDisk;
         
+        id<JTSImageViewControllerDownloaderDelegate> delegate = self.downloaderDelegate != nil ? self.downloaderDelegate : self;
+        self.imageDownloader = [delegate downloaderForImageInfo:imageInfo];
         typeof(self) __weak weakSelf = self;
-        NSURLSessionDataTask *task = [JTSSimpleImageDownloader downloadImageForURL:imageInfo.imageURL canonicalURL:imageInfo.canonicalImageURL completion:^(UIImage *image) {
+        [self.imageDownloader downloadImage:^(UIImage *image){
             typeof(self) strongSelf = weakSelf;
             [strongSelf cancelProgressTimer];
             if (image) {
@@ -414,8 +447,6 @@ typedef struct {
                 // If we're still presenting, at the end of presentation we'll auto dismiss.
             }
         }];
-        
-        self.imageDownloadDataTask = task;
         
         [self startProgressTimer];
     }
@@ -1881,13 +1912,13 @@ typedef struct {
 
 - (void)progressTimerFired:(NSTimer *)timer {
     CGFloat progress = 0;
-    CGFloat bytesExpected = self.imageDownloadDataTask.countOfBytesExpectedToReceive;
+    CGFloat bytesExpected = self.imageDownloader.countOfBytesExpectedToReceive;
     if (bytesExpected > 0 && _flags.imageIsBeingReadFromDisk == NO) {
         [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveLinear animations:^{
             self.spinner.alpha = 0;
             self.progressView.alpha = 1;
         } completion:nil];
-        progress = self.imageDownloadDataTask.countOfBytesReceived / bytesExpected;
+        progress = self.imageDownloader.countOfBytesReceived / bytesExpected;
     }
     self.progressView.progress = progress;
 }
@@ -1971,5 +2002,35 @@ typedef struct {
 
 @end
 
+///--------------------------------------------------------------------------------------------------------------------
+/// Private Downloader Implementation
+///--------------------------------------------------------------------------------------------------------------------
+
+#pragma mark - Private Downloader
+@implementation __PrivateJTSImageViewControllerDownloader
+
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo {
+    self = [super init];
+    _info = imageInfo;
+    return self;
+}
+
+- (void)downloadImage:(void (^)(UIImage *))completion {
+    _task = [JTSSimpleImageDownloader downloadImageForURL:_info.imageURL canonicalURL:_info.canonicalImageURL completion:completion];
+}
+
+- (void)cancel {
+    [_task cancel];
+}
+
+- (int64_t)countOfBytesExpectedToReceive {
+    return _task.countOfBytesExpectedToReceive;
+}
+
+- (int64_t)countOfBytesReceived {
+    return _task.countOfBytesReceived;
+}
+
+@end
 
 

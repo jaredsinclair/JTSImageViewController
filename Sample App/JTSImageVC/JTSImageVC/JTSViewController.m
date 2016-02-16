@@ -12,6 +12,7 @@
 #import "JTSImageInfo.h"
 
 #define TRY_AN_ANIMATED_GIF 0
+#define TRY_AN_IMAGE_URL 0
 
 @interface JTSViewController ()
 
@@ -37,7 +38,9 @@
     // Create image info
     JTSImageInfo *imageInfo = [[JTSImageInfo alloc] init];
 #if TRY_AN_ANIMATED_GIF == 1
-    imageInfo.imageURL = [NSURL URLWithString:@"http://media.giphy.com/media/O3QpFiN97YjJu/giphy.gif"];
+    imageInfo.imageURL = [NSURL URLWithString:@"https://media.giphy.com/media/O3QpFiN97YjJu/giphy.gif"];
+#elif TRY_AN_IMAGE_URL == 1
+    imageInfo.imageURL = [NSURL URLWithString:@"https://upload.wikimedia.org/wikipedia/commons/6/67/Inside_the_Batad_rice_terraces.jpg"];
 #else
     imageInfo.image = self.bigImageButton.image;
 #endif
