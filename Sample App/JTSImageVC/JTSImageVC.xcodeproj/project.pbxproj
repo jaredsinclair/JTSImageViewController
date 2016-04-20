@@ -32,6 +32,7 @@
 		7FA8566719B2762F00913254 /* banecat-red.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FA8566619B2762F00913254 /* banecat-red.png */; };
 		7FE0848218E7C5C600F2F6B4 /* banecat.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7FE0848118E7C5C600F2F6B4 /* banecat.jpg */; };
 		7FE95B4E18EE0E8100F18370 /* UIApplication+JTSImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */; };
+		A5718EA41CC7D1420036F049 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5718EA31CC7D1420036F049 /* Media.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +82,7 @@
 		7FE0848118E7C5C600F2F6B4 /* banecat.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banecat.jpg; sourceTree = "<group>"; };
 		7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIApplication+JTSImageViewController.h"; path = "../../../Source/UIApplication+JTSImageViewController.h"; sourceTree = "<group>"; };
 		7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIApplication+JTSImageViewController.m"; path = "../../../Source/UIApplication+JTSImageViewController.m"; sourceTree = "<group>"; };
+		A5718EA31CC7D1420036F049 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Media.xcassets; path = ../../../Source/Media.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +205,7 @@
 				7F9A794118E75712000CAA69 /* UIImage+JTSImageEffects.m */,
 				7FE95B4C18EE0E8100F18370 /* UIApplication+JTSImageViewController.h */,
 				7FE95B4D18EE0E8100F18370 /* UIApplication+JTSImageViewController.m */,
+				A5718EA31CC7D1420036F049 /* Media.xcassets */,
 			);
 			name = Source;
 			path = JTSImageVC;
@@ -292,6 +295,7 @@
 				47A333FF19D8F34A00F60031 /* Default-1334.png in Resources */,
 				7F9A791718E754A7000CAA69 /* Images.xcassets in Resources */,
 				7F9A790918E754A7000CAA69 /* InfoPlist.strings in Resources */,
+				A5718EA41CC7D1420036F049 /* Media.xcassets in Resources */,
 				7F9A791218E754A7000CAA69 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
