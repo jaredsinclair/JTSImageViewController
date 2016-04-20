@@ -41,10 +41,10 @@
 #else
     imageInfo.image = self.bigImageButton.image;
 #endif
-    imageInfo.title = @"WHEEEARKJEARJ";
+    imageInfo.title = @"A comfortable hotel with expansive views over the harbour and just next to a nice walkway which winds and undulates over the canal. What’s strange is";
     imageInfo.dateText = @"8 April 2016";
     imageInfo.timeText = @"8:36am";
-    imageInfo.detailText = @"A comfortable hotel with expansive views over the harbour and just next to a nice walkway which winds and undulates over the canal. What’s strange is";
+    imageInfo.detailText = @"A comfortable hotel with expansive views over the harbour and just next to a nice walkway which winds and undulates over the canal. What’s strange is, A comfortable hotel with expansive views over the harbour and just next to a nice walkway which winds and undulates over the canal. What’s strange is, A comfortable hotel with expansive views over the harbour and just next to a nice walkway which winds and undulates over the canal. What’s strange is";
     imageInfo.referenceRect = self.bigImageButton.frame;
     imageInfo.referenceView = self.bigImageButton.superview;
     imageInfo.referenceContentMode = self.bigImageButton.contentMode;
