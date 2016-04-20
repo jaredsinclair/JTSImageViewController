@@ -560,14 +560,17 @@ typedef struct {
     self.timeBackground = [UIView new];
     self.timeBackground.backgroundColor = RGB(234, 239, 246);
     self.timeBackground.layer.cornerRadius = 12.5;
+
     self.timeBackground.translatesAutoresizingMaskIntoConstraints = false;
     [self.view addSubview:self.timeBackground];
 
     self.timeLabel = [UILabel new];
     self.timeLabel.textColor = RGB(63, 68, 72);
     self.timeLabel.font = [UIFont fontWithName:@"Avenir-Roman" size:11];
+    self.timeLabel.textAlignment = NSTextAlignmentCenter;
     self.timeLabel.text = self.imageInfo.timeText;
     self.timeLabel.translatesAutoresizingMaskIntoConstraints = false;
+    [self.timeLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self.timeBackground addSubview:self.timeLabel];
 
     self.splitterView = [UIView new];
