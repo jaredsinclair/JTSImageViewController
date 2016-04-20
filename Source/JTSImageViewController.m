@@ -12,6 +12,9 @@
 #import "UIImage+JTSImageEffects.h"
 #import "UIApplication+JTSImageViewController.h"
 
+#define RGB(r, g, b) \
+[UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1]
+
 CG_INLINE CGFLOAT_TYPE JTSImageFloatAbs(CGFLOAT_TYPE aFloat) {
 #if CGFLOAT_IS_DOUBLE
     return fabs(aFloat);
