@@ -3,6 +3,12 @@ JTSImageViewController
 
 An interactive iOS image viewer that does it all: double tap to zoom, flick to dismiss, et cetera.
 
+## Pod install
+
+```bash
+pod 'Better-JTSImageViewController'
+```
+
 ## Pull Requests
 
 Pull requests are welcome, but should be submitted on the `dev` branch. Exceptions will be made for critical bug fixes.
