@@ -12,6 +12,8 @@
 
 + (BOOL)imageURLIsAGIF:(NSString *)imageURL;
 
++ (BOOL)imageDataIsAGIF:(NSData *)imageData;
+
 /*
  UIImage *animation = [UIImage animatedImageWithAnimatedGIFData:theData];
  

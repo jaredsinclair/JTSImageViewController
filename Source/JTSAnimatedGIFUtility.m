@@ -24,6 +24,17 @@
     return [[imageURL substringFromIndex:[imageURL length] - 3] isEqualToString:@"gif"];
 }
 
+// What's in a gif: http://giflib.sourceforge.net/whatsinagif/bits_and_bytes.html
++ (BOOL)imageDataIsAGIF:(NSData *)imageData {
+    if (imageData.length < 3) {
+        return NO;
+    }
+    
+    unsigned char aBuffer[3];
+    [imageData getBytes:aBuffer length:3];
+    return aBuffer[0] == 'G' && aBuffer[1] == 'I' && aBuffer[2] == 'F';
+}
+
 static int delayCentisecondsForImageAtIndex(CGImageSourceRef const source, size_t const i) {
     int delayCentiseconds = 1;
     CFDictionaryRef const properties = CGImageSourceCopyPropertiesAtIndex(source, i, NULL);
