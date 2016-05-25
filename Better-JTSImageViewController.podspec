@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name         = "JTSImageViewController"
+  s.name         = "Better-JTSImageViewController"
   s.version      = "1.5.1"
   s.summary      = "An interactive iOS image viewer that does it all: double tap to zoom, flick to dismiss, et cetera."
   s.homepage     = "https://github.com/anxiaoyi/JTSImageViewController"
