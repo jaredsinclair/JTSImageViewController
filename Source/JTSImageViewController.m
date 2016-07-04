@@ -25,7 +25,7 @@ CG_INLINE CGFLOAT_TYPE JTSImageFloatAbs(CGFLOAT_TYPE aFloat) {
 ///--------------------------------------------------------------------------------------------------------------------
 
 // Public Constants
-CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0.66f;
+CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0.85f;
 CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius = 2.0f;
 
 // Private Constants
@@ -1688,7 +1688,6 @@ typedef struct {
         if (allowCopy) {
             CGPoint location = [sender locationInView:self.imageView];
             UIMenuController *menuController = [UIMenuController sharedMenuController];
-            
             [menuController setTargetRect:CGRectMake(location.x, location.y, 0.0f, 0.0f) inView:self.imageView];
             [menuController setMenuVisible:YES animated:YES];
         }
@@ -1701,27 +1700,66 @@ typedef struct {
         return;
     }
     
+    CGPoint velocity = [panner velocityInView:panner.view];
+    
+    if (JTSImageViewControllerDismissMode_UpDownDirection == self.modalDismissMode) {
+        if (fabs(velocity.y) < fabs(velocity.x)) {
+            // Allow only up/down
+            return;
+        }
+    }
+    
+    //Only used for mode JTSImageViewControllerDismissMode_UpDownDirection
+    CGPoint centerOfView = self.view.center;
+    
     CGPoint translation = [panner translationInView:panner.view];
     CGPoint locationInView = [panner locationInView:panner.view];
-    CGPoint velocity = [panner velocityInView:panner.view];
     CGFloat vectorDistance = sqrtf(powf(velocity.x, 2)+powf(velocity.y, 2));
-    
+
     if (panner.state == UIGestureRecognizerStateBegan) {
+        
         _flags.isDraggingImage = CGRectContainsPoint(self.imageView.frame, locationInView);
+        
         if (_flags.isDraggingImage) {
+            
+            if (JTSImageViewControllerDismissMode_UpDownDirection == self.modalDismissMode) {
+                // Change the center for JTSImageViewControllerDismissMode_UpDownDirection
+                locationInView = centerOfView;
+            }
+            
             [self startImageDragging:locationInView translationOffset:UIOffsetZero];
+
         }
     }
     else if (panner.state == UIGestureRecognizerStateChanged) {
+        
         if (_flags.isDraggingImage) {
+            
             CGPoint newAnchor = self.imageDragStartingPoint;
-            newAnchor.x += translation.x + self.imageDragOffsetFromActualTranslation.horizontal;
-            newAnchor.y += translation.y + self.imageDragOffsetFromActualTranslation.vertical;
+            
+            if (JTSImageViewControllerDismissMode_UpDownDirection == self.modalDismissMode) {
+                newAnchor.x = centerOfView.x;
+                newAnchor.y += translation.y;
+            } else {
+                newAnchor.x += translation.x + self.imageDragOffsetFromActualTranslation.horizontal;
+                newAnchor.y += translation.y + self.imageDragOffsetFromActualTranslation.vertical;
+            }
+            
             self.attachmentBehavior.anchorPoint = newAnchor;
+           
         } else {
+            
             _flags.isDraggingImage = CGRectContainsPoint(self.imageView.frame, locationInView);
+            
             if (_flags.isDraggingImage) {
+                
                 UIOffset translationOffset = UIOffsetMake(-1*translation.x, -1*translation.y);
+                
+                if (JTSImageViewControllerDismissMode_UpDownDirection == self.modalDismissMode) {
+                    locationInView = centerOfView;
+                    translationOffset = UIOffsetZero;
+                }
+                
                 [self startImageDragging:locationInView translationOffset:translationOffset];
             }
         }
@@ -1729,6 +1767,9 @@ typedef struct {
     else {
         if (vectorDistance > JTSImageViewController_MinimumFlickDismissalVelocity) {
             if (_flags.isDraggingImage) {
+                if (JTSImageViewControllerDismissMode_UpDownDirection == self.modalDismissMode) {
+                    velocity.x = 0;
+                }
                 [self dismissImageWithFlick:velocity];
             } else {
                 [self dismiss:YES];
