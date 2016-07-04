@@ -15,14 +15,9 @@ JTSImageViewController is like a "light box" for iOS. It's similar to image view
 
 <img width="320" src="https://raw.githubusercontent.com/jaredsinclair/JTSImageViewController/master/jts-image-viewer-screenshot.png" />
 
-## Dismiss mode: Up/Down
+## Dismiss mode: Up-Down and any direction
 <img width="320" src="http://i.giphy.com/l46CbOfccHTDgOOyI.gif" />
-Dismiss mode: Up/Down
 <img width="320" src="http://i.giphy.com/xT8qBvHjcLRRDaF9Uk.gif" />
-Dismiss mode: Up/Down
-
-## Dismiss mode: Any direction
-
 
 ## How Does it Work?
 
