@@ -36,6 +36,11 @@ typedef NS_OPTIONS(NSInteger, JTSImageViewControllerBackgroundOptions) {
     JTSImageViewControllerBackgroundOption_Blurred = 1 << 1,
 };
 
+typedef NS_ENUM(NSInteger, JTSImageViewControllerDismissMode) {
+    JTSImageViewControllerDismissMode_UpDownDirection,
+    JTSImageViewControllerDismissMode_AnyDirection
+};
+
 extern CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay;
 extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 
@@ -62,6 +67,8 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerAccessibilityDelegate> accessibilityDelegate;
 
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerAnimationDelegate> animationDelegate;
+
+@property (assign, nonatomic, readwrite)  JTSImageViewControllerDismissMode modalDismissMode;
 
 /**
  Designated initializer.
