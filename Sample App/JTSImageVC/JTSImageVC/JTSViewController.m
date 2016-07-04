@@ -51,6 +51,10 @@
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
                                            backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
+                                           
+    // Set UP/DOWN gesture-dismiss mode for view controller.
+    // For dismiss in any direction use: JTSImageViewControllerDismissMode_AnyDirection
+    imageViewer.modalDismissMode = JTSImageViewControllerDismissMode_AnyDirection;
     
     // Present the view controller.
     [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
