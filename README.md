@@ -15,8 +15,13 @@ JTSImageViewController is like a "light box" for iOS. It's similar to image view
 
 <img width="320" src="https://raw.githubusercontent.com/jaredsinclair/JTSImageViewController/master/jts-image-viewer-screenshot.png" />
 
-## Dismiss UP/DOWN mode
+## Dismiss mode: Up/Down
 <img width="320" src="http://i.giphy.com/l46CbOfccHTDgOOyI.gif" />
+Dismiss mode: Up/Down
+<img width="320" src="http://i.giphy.com/xT8qBvHjcLRRDaF9Uk.gif" />
+Dismiss mode: Up/Down
+
+## Dismiss mode: Any direction
 
 
 ## How Does it Work?
@@ -39,7 +44,7 @@ Usage is pretty simple, though there are some cool options and delegate methods 
                                            backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
                                            
     // Set UP/DOWN gesture-dismiss mode for view controller.
-    // For dismiss in any direction, comment or remove the following line.
+    // For dismiss in any direction use: JTSImageViewControllerDismissMode_AnyDirection
     imageViewer.modalDismissMode = JTSImageViewControllerDismissMode_UpDownDirection;
     
     // Present the view controller.
@@ -59,7 +64,7 @@ That's it.
 
 - **Handle Long-Presses:** Implement an `interactionsDelegate` to respond to long presses on the image, or to temporarily disable user interactions (comes in handy if you show an overlay that could cause gesture conflict).
 
-- **Dismiss mode gesture:** Implement an `JTSImageViewControllerDismissMode` enum to set Up/Down gesture to close image-modal or Any direction gesture (default)
+- **Dismiss mode gesture:** Implement an `JTSImageViewControllerDismissMode`enum to set Up/Down gesture to close image-modal or Any direction gesture.
 
 ## License
 
