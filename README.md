@@ -15,6 +15,10 @@ JTSImageViewController is like a "light box" for iOS. It's similar to image view
 
 <img width="320" src="https://raw.githubusercontent.com/jaredsinclair/JTSImageViewController/master/jts-image-viewer-screenshot.png" />
 
+## Dismiss UP/DOWN mode
+<img width="320" src="http://i.giphy.com/l46CbOfccHTDgOOyI.gif" />
+
+
 ## How Does it Work?
 
 Usage is pretty simple, though there are some cool options and delegate methods if you need them. Here's what your simplest implementation might look like:
@@ -33,6 +37,10 @@ Usage is pretty simple, though there are some cool options and delegate methods 
                                            initWithImageInfo:imageInfo
                                            mode:JTSImageViewControllerMode_Image
                                            backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
+                                           
+    // Set UP/DOWN gesture-dismiss mode for view controller.
+    // For dismiss in any direction, comment or remove the following line.
+    imageViewer.modalDismissMode = JTSImageViewControllerDismissMode_UpDownDirection;
     
     // Present the view controller.
     [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
@@ -50,6 +58,8 @@ That's it.
 - **Alt-Text Mode:** Need to show the alt text for an image? JTSImageViewController includes an alternate mode that shows a full-screen, centered text view using the same style as the image mode.
 
 - **Handle Long-Presses:** Implement an `interactionsDelegate` to respond to long presses on the image, or to temporarily disable user interactions (comes in handy if you show an overlay that could cause gesture conflict).
+
+- **Dismiss mode gesture:** Implement an `JTSImageViewControllerDismissMode` enum to set Up/Down gesture to close image-modal or Any direction gesture (default)
 
 ## License
 
