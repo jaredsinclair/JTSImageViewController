@@ -25,4 +25,16 @@
     return viewControllerBased;
 }
 
+- (void)jts_updateStatusBarAppearanceHidden:(BOOL)hidden animation:(UIStatusBarAnimation)animation fromViewController:(UIViewController *)sender {
+    if ([self jts_usesViewControllerBasedStatusBarAppearance]) {
+        [sender setNeedsStatusBarAppearanceUpdate];
+    } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_9_0
+        [[UIApplication sharedApplication] setStatusBarHidden:hidden withAnimation:animation];
+#else
+        NSLog(@"setStatusBarHidden:withAnimation: is deprecated. Please use view-controller-based status bar appearance.");
+#endif
+    }
+}
+
 @end
