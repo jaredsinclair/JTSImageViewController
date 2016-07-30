@@ -1,3 +1,5 @@
+### *This repository is no longer under active development. I think it's probably still safe to use on iOS 7 through 9, but your mileage may vary. I may someday do a thorough rewrite in Swift, taking into account newer API features, etc. ~ Jared*
+
 JTSImageViewController
 ======================
 
