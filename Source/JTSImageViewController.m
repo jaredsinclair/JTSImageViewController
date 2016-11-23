@@ -1027,7 +1027,9 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    [self updateSnapshot];
+
     // Have to dispatch after or else the image view changes above won't be
     // committed prior to the animations below. A single dispatch_async(dispatch_get_main_queue()
     // wouldn't work under certain scrolling conditions, so it has to be an ugly
@@ -1103,7 +1105,8 @@ typedef struct {
                     [[UIApplication sharedApplication] setStatusBarHidden:_startingInfo.statusBarHiddenPriorToPresentation
                                                             withAnimation:UIStatusBarAnimationNone];
                 }
-                
+
+                [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
                 [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
                     [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
                 }];
@@ -1118,7 +1121,9 @@ typedef struct {
     _flags.isAnimatingAPresentationOrDismissal = YES ;
     _flags.isDismissing = YES;
     
+
     __weak JTSImageViewController *weakSelf = self;
+    [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
     
     CGFloat duration = JTSImageViewController_TransitionAnimationDuration;
     if (USE_DEBUG_SLOW_ANIMATIONS == 1) {
@@ -1128,7 +1133,9 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    [self updateSnapshot];
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1171,7 +1178,9 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    [self updateSnapshot];
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1194,6 +1203,7 @@ typedef struct {
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
+        [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
@@ -1225,7 +1235,9 @@ typedef struct {
     if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillBeginDismissal:withContainerView:)]) {
         [weakSelf.animationDelegate imageViewerWillBeginDismissal:weakSelf withContainerView:weakSelf.view];
     }
-    
+
+    [self updateSnapshot];
+
     [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
         
         if ([weakSelf.animationDelegate respondsToSelector:@selector(imageViewerWillAnimateDismissal:withContainerView:duration:)]) {
@@ -1248,6 +1260,7 @@ typedef struct {
                                                     withAnimation:UIStatusBarAnimationFade];
         }
     } completion:^(BOOL finished) {
+        [weakSelf.dismissalDelegate imageViewerWillDismiss:weakSelf];
         [weakSelf.presentingViewController dismissViewControllerAnimated:NO completion:^{
             [weakSelf.dismissalDelegate imageViewerDidDismiss:weakSelf];
         }];
@@ -1256,11 +1269,22 @@ typedef struct {
 
 #pragma mark - Snapshots
 
+- (void) updateSnapshot {
+//    UIView *newSnapshotView = [self snapshotFromViewController:self.presentingViewController];
+//    [self.view insertSubview: newSnapshotView aboveSubview: self.snapshotView];
+//    [self.snapshotView removeFromSuperview];
+//    self.snapshotView = newSnapshotView;
+}
+
 - (UIView *)snapshotFromParentmostViewController:(UIViewController *)viewController {
     
     UIViewController *presentingViewController = viewController.view.window.rootViewController;
     while (presentingViewController.presentedViewController) presentingViewController = presentingViewController.presentedViewController;
-    UIView *snapshot = [presentingViewController.view snapshotViewAfterScreenUpdates:YES];
+    return [self snapshotFromViewController:presentingViewController];
+}
+
+- (UIView *)snapshotFromViewController:(UIViewController *)viewController {
+    UIView *snapshot = [viewController.view snapshotViewAfterScreenUpdates:YES];
     snapshot.clipsToBounds = NO;
     return snapshot;
 }

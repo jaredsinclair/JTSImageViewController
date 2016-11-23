@@ -105,6 +105,7 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  Called after the image viewer has finished dismissing.
  */
 - (void)imageViewerDidDismiss:(JTSImageViewController *)imageViewer;
+- (void)imageViewerWillDismiss:(JTSImageViewController *)imageViewer;
 
 @end
 
