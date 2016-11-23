@@ -25,7 +25,7 @@ CG_INLINE CGFLOAT_TYPE JTSImageFloatAbs(CGFLOAT_TYPE aFloat) {
 ///--------------------------------------------------------------------------------------------------------------------
 
 // Public Constants
-CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 0.66f;
+CGFloat const JTSImageViewController_DefaultAlphaForBackgroundDimmingOverlay = 1.0f;
 CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius = 2.0f;
 
 // Private Constants
