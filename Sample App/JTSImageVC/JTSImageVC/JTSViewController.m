@@ -53,7 +53,9 @@
                                            backgroundStyle:JTSImageViewControllerBackgroundOption_Scaled];
     
     // Present the view controller.
-    [imageViewer showFromViewController:self transition:JTSImageViewControllerTransition_FromOriginalPosition];
+    [imageViewer showFromViewController:self
+                             transition:JTSImageViewControllerTransition_FromOriginalPosition
+                             completion:nil];
 }
 
 @end
