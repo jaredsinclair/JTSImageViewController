@@ -429,6 +429,14 @@ typedef struct {
         
         id<JTSImageViewControllerDownloaderDelegate> delegate = self.downloaderDelegate != nil ? self.downloaderDelegate : self;
         self.imageDownloader = [delegate downloaderForImageInfo:imageInfo];
+        
+        //Setup the timer before we call download image, since its possible that
+        //it may immediately call cancelProgressTimer BEFORE we call startProgressTimer
+        //If that happens, it will invalidate the timer we create here via the call
+        //to setup, and then when we call start, we will simeply return since the timer
+        //will be nil
+        [self setupProgressTimer];
+        
         typeof(self) __weak weakSelf = self;
         [self.imageDownloader downloadImage:^(UIImage *image){
             typeof(self) strongSelf = weakSelf;
@@ -1895,19 +1903,26 @@ typedef struct {
 
 #pragma mark - Progress Bar
 
-- (void)startProgressTimer {
+- (void)setupProgressTimer {
     self.downloadProgressTimer = [[NSTimer alloc] initWithFireDate:[NSDate date]
                                                           interval:0.05
                                                             target:self
                                                           selector:@selector(progressTimerFired:)
                                                           userInfo:nil
                                                            repeats:YES];
-    [[NSRunLoop mainRunLoop] addTimer:self.downloadProgressTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)startProgressTimer {
+    if (self.downloadProgressTimer != nil) {
+        [[NSRunLoop mainRunLoop] addTimer:self.downloadProgressTimer forMode:NSRunLoopCommonModes];
+    }
 }
 
 - (void)cancelProgressTimer {
-    [self.downloadProgressTimer invalidate];
-    self.downloadProgressTimer = nil;
+    if (self.downloadProgressTimer != nil) {
+        [self.downloadProgressTimer invalidate];
+        self.downloadProgressTimer = nil;
+    }
 }
 
 - (void)progressTimerFired:(NSTimer *)timer {
