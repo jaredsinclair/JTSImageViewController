@@ -35,7 +35,7 @@
                 
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                     
-                    UIImage *image = [self imageFromData:data forURL:imageURL canonicalURL:canonicalURL];
+                    UIImage *image = [self imageFromData:data MIMEType:response.MIMEType forURL:imageURL canonicalURL:canonicalURL];
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (completion) {
@@ -54,12 +54,12 @@
     return dataTask;
 }
 
-+ (UIImage *)imageFromData:(NSData *)data forURL:(NSURL *)imageURL canonicalURL:(NSURL *)canonicalURL {
++ (UIImage *)imageFromData:(NSData *)data MIMEType:(NSString *)MIMEType forURL:(NSURL *)imageURL canonicalURL:(NSURL *)canonicalURL {
     UIImage *image = nil;
     
     if (data) {
         NSString *referenceURL = (canonicalURL.absoluteString.length) ? canonicalURL.absoluteString : imageURL.absoluteString;
-        if ([JTSAnimatedGIFUtility imageURLIsAGIF:referenceURL]) {
+        if ([MIMEType isEqualToString:@"image/gif"] || [JTSAnimatedGIFUtility imageURLIsAGIF:referenceURL]) {
             image = [JTSAnimatedGIFUtility animatedImageWithAnimatedGIFData:data];
         }
         if (image == nil) {
