@@ -104,21 +104,10 @@ static UIImage *animatedImageWithAnimatedGIFImageSource(CGImageSourceRef const s
     int delayCentiseconds[count]; // in centiseconds
     createImagesAndDelays(source, count, images, delayCentiseconds);
     int const totalDurationCentiseconds = sum(count, delayCentiseconds);
-    UIImage *image = nil;
-    if (totalDurationCentiseconds == 0 || count == 1) {
-        // This can't be animated, so don't bother trying to create an animated image.
-        CGImageRef imageRef = CGImageSourceCreateImageAtIndex(source, 0, NULL);
-        if (imageRef) {
-            image = [UIImage imageWithCGImage:imageRef];
-            CGImageRelease(imageRef);
-        }
-    } else {
-        NSArray *const frames = frameArray(count, images, delayCentiseconds, totalDurationCentiseconds);
-        UIImage *const animation = [UIImage animatedImageWithImages:frames duration:(NSTimeInterval)totalDurationCentiseconds / 100.0];
-        releaseImages(count, images);
-        image = animation;
-    }
-    return image;
+    NSArray *const frames = frameArray(count, images, delayCentiseconds, totalDurationCentiseconds);
+    UIImage *const animation = [UIImage animatedImageWithImages:frames duration:(NSTimeInterval)totalDurationCentiseconds / 100.0];
+    releaseImages(count, images);
+    return animation;
 }
 
 static UIImage *animatedImageWithAnimatedGIFReleasingImageSource(CGImageSourceRef source CF_CONSUMED) {
