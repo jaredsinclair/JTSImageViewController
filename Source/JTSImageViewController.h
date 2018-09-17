@@ -8,7 +8,7 @@
 
 @import UIKit;
 
-#import "JTSImageInfo.h"
+#import "JTSMediaInfo.h"
 
 ///--------------------------------------------------------------------------------------------------------------------
 /// Definitions
@@ -45,9 +45,9 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 
 @interface JTSImageViewController : UIViewController
 
-@property (strong, nonatomic, readonly) JTSImageInfo *imageInfo;
+@property (strong, nonatomic, readonly) NSArray *imageInfoArray;//JTSMediaInfo *imageInfo;
 
-@property (strong, nonatomic, readonly) UIImage *image;
+@property (strong, nonatomic, readonly) NSMutableArray *imageArray;
 
 @property (assign, nonatomic, readonly) JTSImageViewControllerMode mode;
 
@@ -73,9 +73,14 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred. 
  The latter is like Tweetbot 3.0's background style.
  */
-- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+- (instancetype)initWithImageInfo:(JTSMediaInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions;
+
+- (instancetype)initWIthImageInfoArray:(NSArray *)imageInfoArray
+                         startingIndex:(int)startingIndex
+                                  mode:(JTSImageViewControllerMode)mode
+                       backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions;
 
 /**
  JTSImageViewController is presented from viewController as a UIKit modal view controller.
@@ -86,12 +91,16 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
  Next, there is an animated transition to a full-screen image viewer.
  */
 - (void)showFromViewController:(UIViewController *)viewController
-                    transition:(JTSImageViewControllerTransition)transition;
+                    transition:(JTSImageViewControllerTransition)transition
+                    completion:(void (^)(void))completion;
 
 /**
  Dismisses the image viewer. Must not be called while previous presentation or dismissal is still in flight.
  */
 - (void)dismiss:(BOOL)animated;
+
+-(void)pauseVideoPlayback;
+-(void)resumeVideoPlayback;
 
 @end
 
