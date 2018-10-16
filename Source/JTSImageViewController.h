@@ -19,6 +19,8 @@
 @protocol JTSImageViewControllerInteractionsDelegate;
 @protocol JTSImageViewControllerAccessibilityDelegate;
 @protocol JTSImageViewControllerAnimationDelegate;
+@protocol JTSImageViewControllerDownloader;
+@protocol JTSImageViewControllerDownloaderDelegate;
 
 typedef NS_ENUM(NSInteger, JTSImageViewControllerMode) {
     JTSImageViewControllerMode_Image,
@@ -63,8 +65,10 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 
 @property (weak, nonatomic, readwrite) id <JTSImageViewControllerAnimationDelegate> animationDelegate;
 
+@property (weak, nonatomic, readonly) id <JTSImageViewControllerDownloaderDelegate> downloaderDelegate;
+
 /**
- Designated initializer.
+ Convenience initializer.
  
  @param imageInfo The source info for image and transition metadata. Required.
  
@@ -76,6 +80,25 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
                              mode:(JTSImageViewControllerMode)mode
                   backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions;
+
+/**
+ Designated initializer.
+ 
+ @param imageInfo The source info for image and transition metadata. Required.
+ 
+ @param mode The mode to be used. (JTSImageViewController has an alternate alt text mode). Required.
+ 
+ @param backgroundStyle Currently, either scaled-and-dimmed, or scaled-dimmed-and-blurred.
+ The latter is like Tweetbot 3.0's background style.
+ 
+ @param downloaderDelegate The downloaderDelegate to be used. Optional.
+ */
+
+- (instancetype)initWithImageInfo:(JTSImageInfo *)imageInfo
+                             mode:(JTSImageViewControllerMode)mode
+                  backgroundStyle:(JTSImageViewControllerBackgroundOptions)backgroundOptions
+               downloaderDelegate:(id <JTSImageViewControllerDownloaderDelegate>)downloaderDelegate;
+
 
 /**
  JTSImageViewController is presented from viewController as a UIKit modal view controller.
@@ -226,6 +249,51 @@ extern CGFloat const JTSImageViewController_DefaultBackgroundBlurRadius;
 - (void)imageViewerWillBeginDismissal:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView;
 
 - (void)imageViewerWillAnimateDismissal:(JTSImageViewController *)imageViewer withContainerView:(UIView *)containerView duration:(CGFloat)duration;
+
+@end
+
+///---------------------------------------------------------------------------------------------------
+/// Downloader
+///---------------------------------------------------------------------------------------------------
+
+@protocol JTSImageViewControllerDownloader <NSObject>
+
+/**
+ The number of bytes that are expected to be recieved.
+ */
+@property (readonly) int64_t countOfBytesExpectedToReceive;
+
+/**
+ The number of bytes that have been received.
+ */
+@property (readonly) int64_t countOfBytesReceived;
+
+/**
+ Called to begin downloading the image.
+ 
+ Calls block with non-nil value on success, and nil on failure.
+ */
+- (void)downloadImage:(void (^)(UIImage *image))completion;
+
+@optional
+
+/**
+ Called to cancel the download if it is in progress.
+ */
+- (void)cancel;
+
+@end
+
+///---------------------------------------------------------------------------------------------------
+/// Downloader Delegate
+///---------------------------------------------------------------------------------------------------
+
+@protocol JTSImageViewControllerDownloaderDelegate <NSObject>
+
+/**
+ Called to retrieve a downloader for the given image information.
+ */
+- (id <JTSImageViewControllerDownloader>)downloaderForImageInfo:(JTSImageInfo *)imageInfo;
 
 @end
 
